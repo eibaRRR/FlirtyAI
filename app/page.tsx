@@ -103,7 +103,7 @@ export default function Landing() {
               <ArrowUpRight size={15} />
             </Link>
             <Link
-              href={`/demo/${DEMO_SCENARIOS[0].id}`}
+              href="/demo"
               className="inline-flex items-center gap-2 bg-surface border border-border text-text font-medium rounded-xl px-5 h-12 text-[15px] hover:border-pink/40 transition"
             >
               <Wand2 size={15} className="text-pink" />
@@ -184,6 +184,15 @@ export default function Landing() {
                 </div>
               </Link>
             ))}
+          </div>
+          <div className="mt-6 text-center">
+            <Link
+              href="/demo"
+              className="inline-flex items-center gap-1.5 text-sm text-text2 hover:text-text transition"
+            >
+              See the full demo gallery
+              <ArrowUpRight size={13} />
+            </Link>
           </div>
         </div>
       </section>

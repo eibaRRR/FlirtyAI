@@ -68,7 +68,7 @@ export default function DemoPage({ params }: { params: Params }) {
         <div className="mb-6 flex items-start justify-between gap-3 flex-wrap">
           <div className="min-w-0">
             <Link
-              href="/"
+              href="/demo"
               className="inline-flex items-center gap-1.5 text-[12px] text-muted hover:text-text transition mb-2"
             >
               <ArrowLeft size={13} /> all demos
