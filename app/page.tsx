@@ -13,6 +13,7 @@ import {
   BarChart3,
   Languages,
 } from "lucide-react";
+import { DEMO_SCENARIOS } from "@/lib/demo";
 
 export default function Landing() {
   return (
@@ -32,6 +33,12 @@ export default function Landing() {
             </div>
           </Link>
           <nav className="flex items-center gap-2 sm:gap-4 text-sm">
+            <a
+              href="#demos"
+              className="hidden sm:inline text-text2 hover:text-text transition"
+            >
+              Demos
+            </a>
             <a
               href="#features"
               className="hidden sm:inline text-text2 hover:text-text transition"
@@ -96,10 +103,11 @@ export default function Landing() {
               <ArrowUpRight size={15} />
             </Link>
             <Link
-              href="/app"
-              className="inline-flex items-center gap-2 bg-surface border border-border text-text font-medium rounded-xl px-5 h-12 text-[15px] hover:border-borderStrong transition"
+              href={`/demo/${DEMO_SCENARIOS[0].id}`}
+              className="inline-flex items-center gap-2 bg-surface border border-border text-text font-medium rounded-xl px-5 h-12 text-[15px] hover:border-pink/40 transition"
             >
-              Try a demo
+              <Wand2 size={15} className="text-pink" />
+              See a demo
               <span className="text-muted text-xs">no upload</span>
             </Link>
           </div>
@@ -124,6 +132,60 @@ export default function Landing() {
 
         {/* Showcase chat-bubble preview */}
         <ShowcaseConversation />
+      </section>
+
+      {/* Demo gallery */}
+      <section
+        id="demos"
+        className="border-t border-border bg-surface/30"
+      >
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-20">
+          <div className="text-center max-w-2xl mx-auto mb-10">
+            <div className="text-eyebrow !text-pink mb-3 inline-flex items-center gap-1.5 justify-center">
+              <Wand2 size={11} /> Live demos · no API call
+            </div>
+            <h2 className="text-display text-4xl sm:text-5xl text-balance">
+              See it before you upload anything.
+            </h2>
+            <p className="text-sm sm:text-base text-text2 leading-relaxed mt-3 text-balance">
+              Three real scenarios with the full conversation, the settings used, and
+              the replies FlirtyAI cooked up. One click, no sign-up.
+            </p>
+          </div>
+          <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
+            {DEMO_SCENARIOS.map((s, i) => (
+              <Link
+                key={s.id}
+                href={`/demo/${s.id}`}
+                className="group relative overflow-hidden bg-surface border border-border rounded-2xl p-5 hover:border-pink/40 shadow-card transition animate-slide-up"
+                style={{ animationDelay: `${i * 60}ms` }}
+              >
+                <div className="absolute -inset-px rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition bg-brand-gradient-soft" />
+                <div className="relative">
+                  <div className="flex items-center gap-2 mb-3 text-pink">
+                    <span className="w-8 h-8 rounded-lg bg-pink/15 border border-pink/30 flex items-center justify-center">
+                      <Wand2 size={14} />
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted">
+                      Scenario {i + 1}
+                    </span>
+                  </div>
+                  <h3 className="font-semibold text-[16px] tracking-tight leading-snug mb-2">
+                    {s.title}
+                  </h3>
+                  <p className="text-xs text-text2 leading-relaxed mb-4">{s.blurb}</p>
+                  <div className="inline-flex items-center gap-1 text-[11px] text-pink font-semibold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition">
+                    Open demo
+                    <ArrowUpRight
+                      size={12}
+                      className="transition group-hover:translate-x-0.5"
+                    />
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
       </section>
 
       {/* Features grid */}
