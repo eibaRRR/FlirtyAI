@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
 import {
   Sparkles,
   AlertCircle,
@@ -14,9 +13,7 @@ import {
   GitCompareArrows,
   MessageSquareDashed,
   Flag,
-  Wand2,
 } from "lucide-react";
-import { DEMO_SCENARIOS } from "@/lib/demo";
 import { MultiUploader } from "./MultiUploader";
 import { MoodControls } from "./MoodControls";
 import { GenderToggle } from "./GenderToggle";
@@ -255,41 +252,6 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
             </div>
           </header>
 
-          {/* Demo scenarios — open in their own dedicated pages */}
-          <section>
-            <div className="flex items-center gap-2 mb-3">
-              <span className="text-eyebrow">No screenshot? See a demo</span>
-              <span className="h-px flex-1 bg-border" />
-              <span className="text-[11px] text-muted">instant · no upload</span>
-            </div>
-            <div className="grid sm:grid-cols-3 gap-3">
-              {DEMO_SCENARIOS.map((s, i) => (
-                <Link
-                  key={s.id}
-                  href={`/demo/${s.id}`}
-                  className="group text-left bg-surface border border-border rounded-2xl p-4 hover:border-pink/40 shadow-card transition animate-slide-up"
-                  style={{ animationDelay: `${i * 60}ms` }}
-                >
-                  <div className="flex items-center gap-2 mb-2 text-pink">
-                    <span className="w-7 h-7 rounded-lg bg-pink/15 border border-pink/30 flex items-center justify-center">
-                      <Wand2 size={13} />
-                    </span>
-                    <span className="text-[10px] uppercase tracking-wider text-muted">
-                      Scenario {i + 1}
-                    </span>
-                  </div>
-                  <h4 className="font-semibold text-[15px] tracking-tight leading-snug mb-1.5">
-                    {s.title}
-                  </h4>
-                  <p className="text-xs text-text2 leading-relaxed">{s.blurb}</p>
-                  <div className="mt-3 inline-flex items-center gap-1 text-[11px] text-pink font-semibold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition">
-                    Open demo
-                    <span className="transition group-hover:translate-x-0.5">→</span>
-                  </div>
-                </Link>
-              ))}
-            </div>
-          </section>
         </>
       ) : (
         <header className="flex items-center justify-between gap-4">
