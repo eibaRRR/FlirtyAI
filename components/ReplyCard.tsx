@@ -50,6 +50,11 @@ type Props = {
   index?: number;
   onMoreLikeThis?: () => void;
   onPredict?: (replyText: string) => Promise<PredictOutput | null>;
+  /**
+   * Demo mode — disables features that would call the API or pollute user stats.
+   * Predict, More-like-this, and Worked/Flopped are gated. Save and Share still work.
+   */
+  demoMode?: boolean;
 };
 
 export function ReplyCard({
@@ -59,6 +64,7 @@ export function ReplyCard({
   index = 0,
   onMoreLikeThis,
   onPredict,
+  demoMode = false,
 }: Props) {
   const [copiedAll, setCopiedAll] = useState(false);
   const [copiedIdx, setCopiedIdx] = useState<number | null>(null);
@@ -181,12 +187,20 @@ export function ReplyCard({
   return (
     <div
       className={cn(
-        "bg-panel border border-border rounded-2xl p-4 transition shadow-[var(--shadow-card)] animate-slide-up",
+        "relative bg-surface border border-border rounded-2xl p-4 transition shadow-[var(--shadow-card)] animate-slide-up",
         r.ring,
-        "hover:shadow-lg"
+        "hover:shadow-lg",
+        // Demo cards get a left edge gradient stripe so they're unmistakable
+        demoMode && "pl-5"
       )}
       style={{ animationDelay: `${index * 60}ms` }}
     >
+      {demoMode && (
+        <span
+          className="absolute left-0 top-3 bottom-3 w-1 rounded-r-full bg-brand-gradient"
+          aria-hidden="true"
+        />
+      )}
       <div className="flex items-start justify-between gap-3 mb-3 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider text-text2">
@@ -227,11 +241,11 @@ export function ReplyCard({
               <Share2 size={15} />
             )}
           </button>
-          {onPredict && (
+          {onPredict && !demoMode && (
             <button
               onClick={runPredict}
               disabled={predicting}
-              className="p-1.5 rounded-lg text-muted hover:text-pink hover:bg-panel2 transition disabled:opacity-50"
+              className="p-1.5 rounded-lg text-muted hover:text-pink hover:bg-surface2 transition disabled:opacity-50"
               title={
                 prediction ? (expanded ? "Hide reactions" : "Show reactions") : "Predict reaction"
               }
@@ -244,10 +258,10 @@ export function ReplyCard({
               )}
             </button>
           )}
-          {onMoreLikeThis && (
+          {onMoreLikeThis && !demoMode && (
             <button
               onClick={onMoreLikeThis}
-              className="p-1.5 rounded-lg text-muted hover:text-pink hover:bg-panel2 transition"
+              className="p-1.5 rounded-lg text-muted hover:text-pink hover:bg-surface2 transition"
               title="Generate variations"
               aria-label="More like this"
             >
@@ -296,36 +310,48 @@ export function ReplyCard({
         {reply.reasoning}
       </div>
 
-      {/* A/B success tracking */}
-      <div className="mt-3 flex items-center gap-2 text-xs flex-wrap">
-        <span className="text-muted">Did it land?</span>
-        <button
-          onClick={() => trackOutcome("worked")}
-          className={cn(
-            "flex items-center gap-1 px-2.5 py-1 rounded-lg border transition active:scale-95",
-            outcome === "worked"
-              ? "bg-safe/15 border-safe/40 text-safe"
-              : "bg-panel2 border-border text-muted hover:border-safe/40 hover:text-safe"
-          )}
-          title="It worked"
-          aria-pressed={outcome === "worked"}
-        >
-          <ThumbsUp size={12} /> Worked
-        </button>
-        <button
-          onClick={() => trackOutcome("flopped")}
-          className={cn(
-            "flex items-center gap-1 px-2.5 py-1 rounded-lg border transition active:scale-95",
-            outcome === "flopped"
-              ? "bg-bold/15 border-bold/40 text-bold"
-              : "bg-panel2 border-border text-muted hover:border-bold/40 hover:text-bold"
-          )}
-          title="It flopped"
-          aria-pressed={outcome === "flopped"}
-        >
-          <ThumbsDown size={12} /> Flopped
-        </button>
-      </div>
+      {/* A/B success tracking — disabled in demo so we don't pollute real stats */}
+      {demoMode ? (
+        <div className="mt-3 flex items-center gap-2 text-xs text-muted">
+          <span className="inline-flex items-center gap-1 opacity-60">
+            <ThumbsUp size={12} /> Worked
+          </span>
+          <span className="inline-flex items-center gap-1 opacity-60">
+            <ThumbsDown size={12} /> Flopped
+          </span>
+          <span className="text-[11px] italic">— locked in demo</span>
+        </div>
+      ) : (
+        <div className="mt-3 flex items-center gap-2 text-xs flex-wrap">
+          <span className="text-muted">Did it land?</span>
+          <button
+            onClick={() => trackOutcome("worked")}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded-lg border transition active:scale-95",
+              outcome === "worked"
+                ? "bg-safe/15 border-safe/40 text-safe"
+                : "bg-surface2 border-border text-muted hover:border-safe/40 hover:text-safe"
+            )}
+            title="It worked"
+            aria-pressed={outcome === "worked"}
+          >
+            <ThumbsUp size={12} /> Worked
+          </button>
+          <button
+            onClick={() => trackOutcome("flopped")}
+            className={cn(
+              "flex items-center gap-1 px-2.5 py-1 rounded-lg border transition active:scale-95",
+              outcome === "flopped"
+                ? "bg-bold/15 border-bold/40 text-bold"
+                : "bg-surface2 border-border text-muted hover:border-bold/40 hover:text-bold"
+            )}
+            title="It flopped"
+            aria-pressed={outcome === "flopped"}
+          >
+            <ThumbsDown size={12} /> Flopped
+          </button>
+        </div>
+      )}
 
       {predictError && <div className="mt-3 text-xs text-bold">{predictError}</div>}
 

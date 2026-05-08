@@ -16,6 +16,7 @@ import {
   Wand2,
 } from "lucide-react";
 import { DEMO_SCENARIOS, type DemoScenario } from "@/lib/demo";
+import { DemoConversationPreview } from "./DemoConversationPreview";
 import { MultiUploader } from "./MultiUploader";
 import { MoodControls } from "./MoodControls";
 import { GenderToggle } from "./GenderToggle";
@@ -29,6 +30,7 @@ import { Button, Section } from "@/components/ui";
 import {
   LENGTHS,
   LENGTH_LABELS,
+  LANGUAGE_LABELS,
   isSpicyMood,
   type Analysis,
   type Gender,
@@ -96,7 +98,8 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
   const [summaryOpen, setSummaryOpen] = useState(false);
 
   // Demo state — true while user is viewing canned demo output
-  const [isDemo, setIsDemo] = useState(false);
+  const [demoScenario, setDemoScenario] = useState<DemoScenario | null>(null);
+  const isDemo = demoScenario !== null;
 
   const loadDemo = (s: DemoScenario) => {
     setError(null);
@@ -107,14 +110,14 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
     setMoods(s.moods);
     setIntensity(s.intensity);
     setLanguage(s.language);
-    setIsDemo(true);
+    setDemoScenario(s);
     if (typeof window !== "undefined") {
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
   const exitDemo = () => {
-    setIsDemo(false);
+    setDemoScenario(null);
     setReplies(null);
     setAnalysis(null);
     setContext("");
@@ -152,7 +155,7 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
     setReplies(null);
     setCompare(null);
     setAnalysis(null);
-    setIsDemo(false);
+    setDemoScenario(null);
     setLoading(true);
 
     const tagInterval = setInterval(() => {
@@ -257,6 +260,22 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
 
   const hasResults = !!replies?.length || !!compare;
   const ready = files.length > 0 && !loading;
+
+  // ===== Dedicated demo layout =====
+  // When viewing a demo, we take over the screen with a guided preview:
+  // (1) what conversation this is replying to, (2) the settings used,
+  // (3) the canned replies (with demoMode visual treatment + locked stats),
+  // (4) a sticky exit CTA pushing toward "use your own chat".
+  if (isDemo && demoScenario && replies) {
+    return (
+      <DemoView
+        scenario={demoScenario}
+        analysis={analysis}
+        replies={replies}
+        onExit={exitDemo}
+      />
+    );
+  }
 
   return (
     <div className="space-y-6 sm:space-y-8 pb-28 sm:pb-0">
@@ -586,30 +605,11 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
       {/* ===== Single results ===== */}
       {replies && replies.length > 0 && (
         <section className="space-y-4 pt-2" aria-live="polite">
-          {isDemo && (
-            <div className="flex items-center justify-between gap-3 bg-purple/10 border border-purple/30 rounded-xl px-4 py-2.5 text-sm animate-slide-up">
-              <span className="inline-flex items-center gap-2 text-purple">
-                <Wand2 size={14} />
-                <span>
-                  <span className="font-semibold">Demo mode</span>{" "}
-                  <span className="text-text2">— canned output, not from your screenshot.</span>
-                </span>
-              </span>
-              <button
-                onClick={exitDemo}
-                className="text-xs text-muted hover:text-text transition shrink-0"
-              >
-                Exit demo
-              </button>
-            </div>
-          )}
           {analysis && <AnalysisPanel analysis={analysis} />}
           <div className="flex items-end justify-between gap-3 pt-1">
             <div>
               <div className="text-eyebrow">Replies · {replies.length} options</div>
-              <h2 className="text-xl font-semibold tracking-tight">
-                {isDemo ? "Here's what FlirtyAI cooks up." : "Pick your line."}
-              </h2>
+              <h2 className="text-xl font-semibold tracking-tight">Pick your line.</h2>
             </div>
           </div>
           <div className="space-y-3">
@@ -661,6 +661,149 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
           </div>
         </section>
       )}
+    </div>
+  );
+}
+
+// =====================================================================
+// Dedicated demo layout — clearly distinct from the main app experience.
+// =====================================================================
+function DemoView({
+  scenario,
+  analysis,
+  replies,
+  onExit,
+}: {
+  scenario: DemoScenario;
+  analysis: Analysis | null;
+  replies: Reply[];
+  onExit: () => void;
+}) {
+  return (
+    <div className="space-y-6 sm:space-y-8 pb-32 sm:pb-12">
+      {/* Demo banner — always visible at the top */}
+      <div className="relative overflow-hidden rounded-2xl border border-purple/40 bg-purple/10 px-4 py-3 sm:px-5 sm:py-4 flex items-center justify-between gap-3 animate-slide-up">
+        <div className="absolute inset-0 bg-brand-gradient-soft opacity-40 pointer-events-none" />
+        <div className="relative flex items-center gap-3 min-w-0">
+          <span className="w-9 h-9 rounded-xl bg-purple/20 border border-purple/30 flex items-center justify-center text-purple shrink-0">
+            <Wand2 size={15} />
+          </span>
+          <div className="min-w-0">
+            <div className="text-[10px] uppercase tracking-wider text-purple font-bold">
+              Live demo
+            </div>
+            <div className="text-sm font-semibold leading-tight truncate">
+              Scenario: {scenario.title}
+            </div>
+            <div className="text-[11px] text-text2 leading-tight">
+              No API call. No data saved. Exit anytime.
+            </div>
+          </div>
+        </div>
+        <button
+          onClick={onExit}
+          className="relative shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold text-text2 hover:text-text bg-surface border border-border hover:border-borderStrong rounded-lg px-3 h-8 transition"
+        >
+          Exit demo
+        </button>
+      </div>
+
+      {/* The conversation that prompted these replies */}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-eyebrow">The conversation</span>
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-[11px] text-muted">step 1 of 2</span>
+        </div>
+        <DemoConversationPreview
+          match={scenario.match}
+          messages={scenario.conversation}
+        />
+      </div>
+
+      {/* Settings used summary */}
+      <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-card">
+        <div className="text-eyebrow mb-3">Settings used</div>
+        <dl className="grid sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
+          <div className="flex items-start justify-between gap-3 sm:flex-col sm:gap-1">
+            <dt className="text-muted text-[11px] uppercase tracking-wider sm:mb-1">Mood</dt>
+            <dd className="font-medium gradient-text">
+              {scenario.moods.join(" + ")}
+            </dd>
+          </div>
+          <div className="flex items-start justify-between gap-3 sm:flex-col sm:gap-1">
+            <dt className="text-muted text-[11px] uppercase tracking-wider sm:mb-1">Intensity</dt>
+            <dd className="font-mono tabular-nums">{scenario.intensity}/10</dd>
+          </div>
+          <div className="flex items-start justify-between gap-3 sm:flex-col sm:gap-1">
+            <dt className="text-muted text-[11px] uppercase tracking-wider sm:mb-1">Language</dt>
+            <dd className="font-medium">{LANGUAGE_LABELS[scenario.language]}</dd>
+          </div>
+          <div className="flex items-start justify-between gap-3 sm:flex-col sm:gap-1">
+            <dt className="text-muted text-[11px] uppercase tracking-wider sm:mb-1">Goal</dt>
+            <dd className="font-medium text-balance leading-snug">{scenario.context}</dd>
+          </div>
+        </dl>
+      </div>
+
+      {/* The replies */}
+      <section className="space-y-4" aria-live="polite">
+        <div className="flex items-center gap-2">
+          <span className="text-eyebrow">FlirtyAI&apos;s replies</span>
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-[11px] text-muted">step 2 of 2</span>
+        </div>
+        {analysis && <AnalysisPanel analysis={analysis} />}
+        <div className="space-y-3">
+          {replies.map((r, i) => (
+            <ReplyCard
+              key={i}
+              reply={r}
+              index={i}
+              moods={scenario.moods}
+              language={scenario.language}
+              demoMode
+            />
+          ))}
+        </div>
+      </section>
+
+      {/* Bottom CTA — strong push toward the real product */}
+      <div className="relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-8 sm:px-10 sm:py-12 text-center mt-2">
+        <div className="hero-glow opacity-50" />
+        <div className="relative z-10 max-w-md mx-auto">
+          <h3 className="text-display text-3xl sm:text-4xl mb-3 text-balance">
+            Now <span className="gradient-text">do it for real.</span>
+          </h3>
+          <p className="text-sm text-text2 leading-relaxed mb-5 text-balance">
+            Drop your own chat screenshot, pick the vibe, and FlirtyAI replies to YOUR
+            actual conversation in seconds.
+          </p>
+          <Button
+            variant="primary"
+            size="lg"
+            leftIcon={<Sparkles size={18} />}
+            onClick={onExit}
+          >
+            Use my own chat
+          </Button>
+        </div>
+      </div>
+
+      {/* Sticky bottom CTA on mobile so the exit is always one tap away */}
+      <div className="sm:hidden fixed left-0 right-0 z-20 px-4 pb-safe bottom-[64px] pointer-events-none">
+        <div className="rounded-2xl bg-bg/90 backdrop-blur-xl border border-purple/40 shadow-pop p-2 flex gap-2 pointer-events-auto">
+          <Button
+            variant="primary"
+            size="lg"
+            fullWidth
+            leftIcon={<Sparkles size={18} />}
+            onClick={onExit}
+          >
+            Use my own chat
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
