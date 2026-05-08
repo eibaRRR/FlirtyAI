@@ -65,6 +65,26 @@ export default function Home() {
 
   return (
     <div className="flex min-h-screen">
+      {/* "Made by Rabie" credit — fixed top-right on desktop */}
+      <a
+        href="https://github.com/eibaRRR"
+        target="_blank"
+        rel="noopener noreferrer"
+        className="hidden md:inline-flex items-center gap-1.5 fixed top-5 right-6 z-40 px-3 py-1.5 rounded-full bg-surface/70 backdrop-blur-xl border border-border hover:border-pink/40 hover:bg-surface transition group shadow-card"
+        aria-label="Made by Rabie"
+      >
+        <span className="font-serif italic text-[13px] text-muted group-hover:text-text2 transition">
+          made by
+        </span>
+        <span className="text-[13px] font-semibold tracking-tight gradient-text">
+          Rabie
+        </span>
+        <span
+          className="w-1.5 h-1.5 rounded-full bg-brand-gradient animate-pulse"
+          aria-hidden="true"
+        />
+      </a>
+
       {/* Desktop sidebar */}
       <Sidebar
         tab={tab}
@@ -93,7 +113,18 @@ export default function Home() {
                 <div className="font-bold text-base leading-tight tracking-tight">
                   <span className="gradient-text">FlirtyAI</span>
                 </div>
-                <div className="text-[11px] text-muted leading-tight">your AI wingperson</div>
+                <div className="text-[11px] text-muted leading-tight">
+                  your AI wingperson{" "}
+                  <span className="font-serif italic">· by</span>{" "}
+                  <a
+                    href="https://github.com/eibaRRR"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="gradient-text font-semibold"
+                  >
+                    Rabie
+                  </a>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-1.5">
@@ -158,8 +189,19 @@ export default function Home() {
           </div>
         </main>
 
-        <footer className="hidden md:block py-6 text-center text-[11px] text-muted">
-          Screenshots are processed in real-time and never stored on the server.
+        <footer className="hidden md:flex flex-col items-center gap-1 py-6 text-[11px] text-muted">
+          <span>Screenshots are processed in real-time and never stored on the server.</span>
+          <span className="inline-flex items-center gap-1.5">
+            <span className="font-serif italic">made with care by</span>
+            <a
+              href="https://github.com/eibaRRR"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="gradient-text font-semibold hover:underline underline-offset-4"
+            >
+              Rabie
+            </a>
+          </span>
         </footer>
       </div>
 
