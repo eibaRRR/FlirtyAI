@@ -1,9 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarHeart, Loader2, AlertCircle, Copy, Check, Bookmark } from "lucide-react";
+import { CalendarHeart, AlertCircle, Copy, Check, Bookmark, MapPin } from "lucide-react";
 import { LanguageSelector } from "./LanguageSelector";
 import { Segmented } from "./Segmented";
+import { Button, Pill, Section, Slider } from "@/components/ui";
 import { useToast, useCopyWithToast } from "./Toaster";
 import {
   DATE_BUDGETS,
@@ -14,26 +15,36 @@ import {
   type DateVibe,
   type Language,
 } from "@/lib/schema";
-import type { SavedSettings } from "@/lib/storage";
-import { useSaved } from "@/lib/storage";
+import { useSaved, type SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
 const BUDGET_DOT: Record<DateBudget, string> = {
-  free: "text-safe",
-  cheap: "text-safe",
-  moderate: "text-med",
-  fancy: "text-pink",
+  free: "bg-safe",
+  cheap: "bg-safe",
+  moderate: "bg-med",
+  fancy: "bg-pink",
 };
 
-function DateIdeaCard({ idea }: { idea: DateIdea }) {
+const VIBE_DOT: Record<DateVibe, string> = {
+  Chill: "bg-safe",
+  Adventurous: "bg-warm",
+  Romantic: "bg-pink",
+  Active: "bg-safe",
+  Foodie: "bg-warm",
+  Cultural: "bg-purple",
+  Playful: "bg-pink",
+  Spicy: "bg-bold",
+};
+
+function DateIdeaCard({ idea, index = 0 }: { idea: DateIdea; index?: number }) {
   const [copied, setCopied] = useState(false);
-  const copyWithToast = useCopyWithToast();
+  const copy = useCopyWithToast();
   const { toast } = useToast();
   const saved = useSaved();
   const isSaved = saved.isSaved("reply", idea.pitch);
 
   const onCopy = async () => {
-    await copyWithToast(idea.pitch, "Pitch copied");
+    await copy(idea.pitch, "Pitch copied");
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   };
@@ -59,16 +70,21 @@ function DateIdeaCard({ idea }: { idea: DateIdea }) {
   };
 
   return (
-    <div className="bg-panel border border-border rounded-2xl p-4 hover:border-purple/40 transition">
-      <div className="flex items-start justify-between gap-3 mb-2 flex-wrap">
-        <div>
-          <div className="font-semibold text-base">{idea.title}</div>
-          <div className="flex items-center gap-2 mt-1 text-[11px] uppercase tracking-wider text-muted">
-            <span className={cn("font-bold", BUDGET_DOT[idea.budget])}>
-              {DATE_BUDGET_LABELS[idea.budget]}
-            </span>
+    <div
+      className="group bg-surface border border-border rounded-2xl p-5 shadow-card hover:border-pink/40 transition animate-slide-up"
+      style={{ animationDelay: `${index * 60}ms` }}
+    >
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="min-w-0">
+          <h3 className="font-semibold text-[17px] tracking-tight leading-snug">
+            {idea.title}
+          </h3>
+          <div className="flex items-center gap-2 mt-1.5 text-[11px] uppercase tracking-wider text-muted">
+            <span className={cn("w-1.5 h-1.5 rounded-full", VIBE_DOT[idea.vibe])} />
+            <span className="text-text2">{idea.vibe}</span>
             <span>·</span>
-            <span>{idea.vibe}</span>
+            <span className={cn("w-1.5 h-1.5 rounded-full", BUDGET_DOT[idea.budget])} />
+            <span className="text-text2">{DATE_BUDGET_LABELS[idea.budget]}</span>
             {idea.duration && (
               <>
                 <span>·</span>
@@ -80,24 +96,35 @@ function DateIdeaCard({ idea }: { idea: DateIdea }) {
         <button
           onClick={toggleSave}
           className={cn(
-            "transition flex items-center gap-1 text-xs",
-            isSaved ? "text-pink" : "text-muted hover:text-pink"
+            "p-1.5 rounded-lg transition shrink-0",
+            isSaved
+              ? "text-pink hover:bg-pink/10"
+              : "text-muted hover:text-pink hover:bg-surface2"
           )}
-          title="Save pitch"
+          aria-label={isSaved ? "Remove from saved" : "Save"}
         >
-          <Bookmark size={13} fill={isSaved ? "currentColor" : "none"} />
+          <Bookmark size={15} fill={isSaved ? "currentColor" : "none"} />
         </button>
       </div>
-      <p className="text-sm leading-relaxed mb-2">{idea.description}</p>
-      <p className="text-xs text-muted italic mb-3">{idea.why}</p>
-      <div className="bg-panel2 border border-border rounded-xl p-3 text-sm relative" dir="auto">
-        <div className="text-[10px] uppercase tracking-wider text-muted mb-1">Pitch</div>
-        {idea.pitch}
+
+      <p className="text-[15px] leading-relaxed mb-2">{idea.description}</p>
+      <p className="text-xs text-text2 italic leading-relaxed mb-4">{idea.why}</p>
+
+      {/* Pitch as a chat-bubble preview */}
+      <div className="relative">
+        <div className="text-eyebrow mb-2">The pitch</div>
+        <div
+          className="bg-brand-gradient text-white rounded-2xl rounded-bl-md px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap shadow-cta"
+          dir="auto"
+        >
+          {idea.pitch}
+        </div>
         <button
           onClick={onCopy}
-          className="absolute top-2 right-2 text-muted hover:text-pink transition"
+          className="absolute top-7 right-2 p-1.5 rounded-lg bg-bg/30 backdrop-blur text-white/80 hover:text-white hover:bg-bg/50 transition opacity-0 group-hover:opacity-100"
+          aria-label="Copy pitch"
         >
-          {copied ? <Check size={13} /> : <Copy size={13} />}
+          {copied ? <Check size={13} className="text-white" /> : <Copy size={13} />}
         </button>
       </div>
     </div>
@@ -160,120 +187,123 @@ export function DateIdeasTab({ settings }: Props) {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="text-sm text-muted">
-        Plan a real-world meet-up. Pick vibes, budget, and (optionally) a city, and we&apos;ll
-        generate ideas plus a ready-to-send pitch for each.
-      </div>
+    <div className="space-y-6">
+      {!ideas && (
+        <p className="text-sm text-text2 leading-relaxed text-balance">
+          Plan a real-world meet-up. Pick vibes, budget, and (optionally) a city — get
+          ideas with a ready-to-send pitch for each.
+        </p>
+      )}
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        <div>
-          <label className="text-sm text-muted mb-2 block">City / area (optional)</label>
-          <input
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            maxLength={80}
-            placeholder="Casablanca, Paris, NYC…"
-            className="w-full bg-panel border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-purple"
-          />
+      <Section eyebrow="Where & when">
+        <div className="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label className="text-eyebrow block mb-2">City / area</label>
+            <div className="relative">
+              <MapPin
+                size={14}
+                className="absolute left-3 top-1/2 -translate-y-1/2 text-muted pointer-events-none"
+              />
+              <input
+                value={city}
+                onChange={(e) => setCity(e.target.value)}
+                maxLength={80}
+                placeholder="Casablanca, Paris, NYC…"
+                className="w-full bg-surface2 border border-border rounded-xl pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:border-pink/60 placeholder:text-muted"
+              />
+            </div>
+          </div>
+          <div>
+            <Slider
+              value={meetingNumber}
+              onChange={setMeetingNumber}
+              min={1}
+              max={10}
+              label="Meeting #"
+              hint={meetingNumber === 1 ? "first date" : `date ${meetingNumber}`}
+              formatValue={(n) => `#${n}`}
+              leftLabel="1st"
+              rightLabel="10th"
+            />
+          </div>
         </div>
-        <div>
-          <label className="text-sm text-muted mb-2 block">
-            Meeting # ({meetingNumber === 1 ? "first date" : `date ${meetingNumber}`})
-          </label>
-          <input
-            type="range"
-            min={1}
-            max={10}
-            step={1}
-            value={meetingNumber}
-            onChange={(e) => setMeetingNumber(Number(e.target.value))}
-            className="w-full"
-          />
-        </div>
-      </div>
+      </Section>
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">
-          Vibes <span className="text-muted/60">(pick 1-4)</span>
-        </label>
+      <Section
+        eyebrow="Vibes"
+        trailing={<span className="text-[11px] text-muted tabular-nums">{vibes.length}/4</span>}
+      >
         <div className="flex flex-wrap gap-2">
-          {DATE_VIBES.map((v) => {
-            const active = vibes.includes(v);
-            return (
-              <button
-                key={v}
-                type="button"
-                onClick={() => toggleVibe(v)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-sm font-medium transition border",
-                  active
-                    ? "bg-brand-gradient border-transparent text-white shadow-lg shadow-pink/20"
-                    : "bg-panel2 border-border text-text/80 hover:border-purple/60"
-                )}
-              >
-                {v}
-              </button>
-            );
-          })}
+          {DATE_VIBES.map((v) => (
+            <Pill
+              key={v}
+              selected={vibes.includes(v)}
+              onClick={() => toggleVibe(v)}
+              leftIcon={<span className={cn("w-1.5 h-1.5 rounded-full", VIBE_DOT[v])} />}
+            >
+              {v}
+            </Pill>
+          ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="bg-panel border border-border rounded-xl px-4 py-3">
-        <div className="text-sm font-medium mb-2">Budget</div>
+      <Section eyebrow="Budget">
         <Segmented<DateBudget>
+          fullWidth
           options={DATE_BUDGETS.map((b) => ({ value: b, label: DATE_BUDGET_LABELS[b] }))}
           value={budget}
           onChange={setBudget}
           size="sm"
         />
-      </div>
+      </Section>
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">
-          Their interests / context <span className="text-muted/60">(optional)</span>
-        </label>
+      <Section
+        eyebrow="Their interests"
+        hint="Optional — but it sharpens the suggestions a lot."
+      >
         <textarea
           value={interests}
           onChange={(e) => setInterests(e.target.value)}
           maxLength={400}
           rows={2}
-          placeholder='e.g. "she loves climbing and indie cafes, hates loud bars"'
-          className="w-full bg-panel border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple resize-none"
+          placeholder='e.g. "loves climbing and indie cafes, hates loud bars"'
+          className="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink/60 resize-none placeholder:text-muted"
         />
-      </div>
+      </Section>
 
-      <LanguageSelector value={language} onChange={setLanguage} />
+      <Section eyebrow="Output language">
+        <LanguageSelector value={language} onChange={setLanguage} />
+      </Section>
 
-      <button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={loading}
+        leftIcon={<CalendarHeart size={18} />}
         onClick={run}
-        disabled={loading}
-        className="w-full bg-brand-gradient text-white font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-lg shadow-pink/20"
       >
-        {loading ? (
-          <>
-            <Loader2 size={18} className="animate-spin" /> Cooking up date ideas…
-          </>
-        ) : (
-          <>
-            <CalendarHeart size={18} /> Generate date ideas
-          </>
-        )}
-      </button>
+        {loading ? "Cooking up date ideas…" : "Generate date ideas"}
+      </Button>
 
       {error && (
-        <div className="flex items-start gap-2 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3 text-sm">
+        <div className="flex items-start gap-2.5 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3.5 text-sm animate-slide-up">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {ideas && ideas.length > 0 && (
-        <section className="space-y-3 pt-4">
-          <h2 className="text-lg font-semibold">Date ideas</h2>
-          {ideas.map((idea, i) => (
-            <DateIdeaCard key={i} idea={idea} />
-          ))}
+        <section className="space-y-3 pt-2">
+          <div>
+            <div className="text-eyebrow">Date ideas · {ideas.length}</div>
+            <h2 className="text-xl font-semibold tracking-tight">Pick your move.</h2>
+          </div>
+          <div className="grid sm:grid-cols-2 gap-3">
+            {ideas.map((idea, i) => (
+              <DateIdeaCard key={i} idea={idea} index={i} />
+            ))}
+          </div>
         </section>
       )}
     </div>

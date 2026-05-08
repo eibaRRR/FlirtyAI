@@ -1,10 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Heart, Loader2, AlertCircle, Copy, Check, Bookmark } from "lucide-react";
+import { Heart, AlertCircle, Copy, Check, Bookmark } from "lucide-react";
 import { GenderToggle } from "./GenderToggle";
 import { LanguageSelector } from "./LanguageSelector";
 import { Segmented } from "./Segmented";
+import { Button, Pill, Section } from "@/components/ui";
 import { useToast, useCopyWithToast } from "./Toaster";
 import {
   CLOSURE_REASONS,
@@ -22,15 +23,24 @@ import {
 import { useSaved, type SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
-function ClosureCard({ msg }: { msg: ClosureMessage }) {
+const TONE_DOT: Record<ClosureTone, string> = {
+  Mature: "bg-purple",
+  Warm: "bg-warm",
+  Cold: "bg-muted",
+  Honest: "bg-safe",
+  Brief: "bg-text2",
+  Apologetic: "bg-med",
+};
+
+function ClosureCard({ msg, index = 0 }: { msg: ClosureMessage; index?: number }) {
   const [copied, setCopied] = useState(false);
-  const copyWithToast = useCopyWithToast();
+  const copy = useCopyWithToast();
   const { toast } = useToast();
   const saved = useSaved();
   const isSaved = saved.isSaved("reply", msg.text);
 
   const onCopy = async () => {
-    await copyWithToast(msg.text, "Copied");
+    await copy(msg.text, "Copied");
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   };
@@ -56,34 +66,47 @@ function ClosureCard({ msg }: { msg: ClosureMessage }) {
   };
 
   return (
-    <div className="bg-panel border border-border rounded-2xl p-4 hover:border-purple/40 transition">
-      <div className="flex items-center justify-between mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider px-2 py-0.5 rounded-full border bg-purple/15 text-purple border-purple/30">
-          {msg.tone}
+    <div
+      className="bg-surface border border-border rounded-2xl p-5 shadow-card hover:border-pink/40 transition animate-slide-up"
+      style={{ animationDelay: `${index * 60}ms` }}
+    >
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-wider">
+          <span className={cn("w-2 h-2 rounded-full", TONE_DOT[msg.tone])} />
+          <span className="text-text2">{msg.tone}</span>
         </span>
-        <div className="flex items-center gap-2 text-xs">
+        <div className="flex items-center gap-1">
           <button
             onClick={toggleSave}
             className={cn(
-              "transition flex items-center gap-1",
-              isSaved ? "text-pink" : "text-muted hover:text-pink"
+              "p-1.5 rounded-lg transition",
+              isSaved
+                ? "text-pink hover:bg-pink/10"
+                : "text-muted hover:text-pink hover:bg-surface2"
             )}
-            title="Save"
+            aria-label={isSaved ? "Remove from saved" : "Save"}
           >
-            <Bookmark size={13} fill={isSaved ? "currentColor" : "none"} />
+            <Bookmark size={14} fill={isSaved ? "currentColor" : "none"} />
           </button>
           <button
             onClick={onCopy}
-            className="text-muted hover:text-pink transition flex items-center gap-1.5"
+            className="p-1.5 rounded-lg text-muted hover:text-pink hover:bg-surface2 transition"
+            aria-label="Copy"
           >
-            {copied ? <Check size={13} /> : <Copy size={13} />} Copy
+            {copied ? <Check size={14} className="text-safe" /> : <Copy size={14} />}
           </button>
         </div>
       </div>
-      <div className="text-sm leading-relaxed whitespace-pre-wrap" dir="auto">
-        {msg.text}
+      {/* Closure messages render as user-side gradient bubbles */}
+      <div className="flex justify-end mb-3">
+        <div
+          className="max-w-[92%] bg-brand-gradient text-white rounded-2xl rounded-br-md px-4 py-2.5 text-[15px] leading-relaxed whitespace-pre-wrap shadow-cta"
+          dir="auto"
+        >
+          {msg.text}
+        </div>
       </div>
-      <div className="mt-3 pt-3 border-t border-border text-xs text-muted italic">
+      <div className="pt-3 border-t border-border text-xs text-muted italic leading-relaxed">
         {msg.reasoning}
       </div>
     </div>
@@ -149,122 +172,99 @@ export function ClosureTab({ persona, settings }: Props) {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="text-sm text-muted">
-        Need to end things, move on, or just say it cleanly? We&apos;ll draft closure messages
-        across the tones you pick — direct, kind, and free of guilt-tripping.
-      </div>
+    <div className="space-y-6">
+      {!messages && (
+        <p className="text-sm text-text2 leading-relaxed text-balance">
+          End things cleanly, kindly, and on your terms. Pick a reason and tone — we&apos;ll
+          draft messages free of guilt-tripping or score-settling.
+        </p>
+      )}
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">What&apos;s going on?</label>
+      <Section eyebrow="What's going on">
         <div className="flex flex-wrap gap-2">
-          {CLOSURE_REASONS.map((r) => {
-            const active = reason === r;
-            return (
-              <button
-                key={r}
-                type="button"
-                onClick={() => setReason(r)}
-                className={cn(
-                  "px-3 py-1.5 rounded-full text-sm font-medium transition border",
-                  active
-                    ? "bg-brand-gradient border-transparent text-white shadow-lg shadow-pink/20"
-                    : "bg-panel2 border-border text-text/80 hover:border-purple/60"
-                )}
-              >
-                {CLOSURE_REASON_LABELS[r]}
-              </button>
-            );
-          })}
+          {CLOSURE_REASONS.map((r) => (
+            <Pill key={r} selected={reason === r} onClick={() => setReason(r)}>
+              {CLOSURE_REASON_LABELS[r]}
+            </Pill>
+          ))}
         </div>
-      </div>
+      </Section>
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">
-          Context <span className="text-muted/60">(optional, helps a lot)</span>
-        </label>
+      <Section eyebrow="Context" hint="Optional, but it makes a real difference.">
         <textarea
           value={context}
           onChange={(e) => setContext(e.target.value)}
           maxLength={800}
           rows={3}
           placeholder='e.g. "we went on 3 dates, she keeps pushing for exclusivity but I just don&apos;t feel it"'
-          className="w-full bg-panel border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple resize-none"
+          className="w-full bg-surface2 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink/60 resize-none placeholder:text-muted"
         />
-      </div>
+      </Section>
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">
-          Tones <span className="text-muted/60">(pick 1-3)</span>
-        </label>
+      <Section
+        eyebrow="Tones"
+        hint="Pick 1-3 — one message per tone."
+        trailing={<span className="text-[11px] text-muted tabular-nums">{tones.length}/3</span>}
+      >
         <div className="flex flex-wrap gap-2">
-          {CLOSURE_TONES.map((t) => {
-            const active = tones.includes(t);
-            return (
-              <button
-                key={t}
-                type="button"
-                onClick={() => toggleTone(t)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-sm font-medium transition border",
-                  active
-                    ? "bg-purple/20 border-purple/50 text-purple"
-                    : "bg-panel2 border-border text-text/80 hover:border-purple/60"
-                )}
-              >
-                {t}
-              </button>
-            );
-          })}
+          {CLOSURE_TONES.map((t) => (
+            <Pill
+              key={t}
+              tone="purple"
+              selected={tones.includes(t)}
+              onClick={() => toggleTone(t)}
+              leftIcon={<span className={cn("w-1.5 h-1.5 rounded-full", TONE_DOT[t])} />}
+            >
+              {t}
+            </Pill>
+          ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        <div className="bg-panel border border-border rounded-xl px-4 py-3">
-          <div className="text-sm font-medium mb-2">Length</div>
+      <Section
+        eyebrow="Output"
+        trailing={
           <Segmented<Length>
             options={LENGTHS.map((l) => ({ value: l, label: LENGTH_LABELS[l] }))}
             value={length}
             onChange={setLength}
             size="sm"
           />
-        </div>
-        <div className="flex flex-wrap gap-4 items-center">
+        }
+      >
+        <div className="flex flex-wrap gap-x-8 gap-y-4 mb-4">
           <GenderToggle label="You are" value={userGender} onChange={setUserGender} />
           <GenderToggle label="They are" value={targetGender} onChange={setTargetGender} />
         </div>
-      </div>
+        <LanguageSelector value={language} onChange={setLanguage} />
+      </Section>
 
-      <LanguageSelector value={language} onChange={setLanguage} />
-
-      <button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={loading}
+        leftIcon={<Heart size={18} />}
         onClick={run}
-        disabled={loading}
-        className="w-full bg-brand-gradient text-white font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-lg shadow-pink/20"
       >
-        {loading ? (
-          <>
-            <Loader2 size={18} className="animate-spin" /> Drafting closure…
-          </>
-        ) : (
-          <>
-            <Heart size={18} /> Draft closure messages
-          </>
-        )}
-      </button>
+        {loading ? "Drafting closure…" : "Draft closure messages"}
+      </Button>
 
       {error && (
-        <div className="flex items-start gap-2 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3 text-sm">
+        <div className="flex items-start gap-2.5 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3.5 text-sm animate-slide-up">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {messages && messages.length > 0 && (
-        <section className="space-y-3 pt-4">
-          <h2 className="text-lg font-semibold">Your closure options</h2>
+        <section className="space-y-3 pt-2">
+          <div>
+            <div className="text-eyebrow">Closure · {messages.length} options</div>
+            <h2 className="text-xl font-semibold tracking-tight">Send the right one.</h2>
+          </div>
           {messages.map((m, i) => (
-            <ClosureCard key={i} msg={m} />
+            <ClosureCard key={i} msg={m} index={i} />
           ))}
         </section>
       )}

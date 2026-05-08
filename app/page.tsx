@@ -1,197 +1,228 @@
-"use client";
-
-import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   Sparkles,
-  Settings,
   Flame,
   Wrench,
   Wand2,
   MessageSquare,
+  ArrowUpRight,
+  Globe2,
+  Lock,
+  Zap,
   Bookmark,
-  Clock,
   BarChart3,
-  Command,
+  Languages,
 } from "lucide-react";
-import { SuggestTab } from "@/components/SuggestTab";
-import { RoastTab } from "@/components/RoastTab";
-import { WingChat } from "@/components/WingChat";
-import { ToolsTab } from "@/components/ToolsTab";
-import { BioTab } from "@/components/BioTab";
-import { SettingsDrawer } from "@/components/SettingsDrawer";
-import { HistoryDrawer } from "@/components/HistoryDrawer";
-import { SavedDrawer } from "@/components/SavedDrawer";
-import { StatsDrawer } from "@/components/StatsDrawer";
-import { OverflowMenu, type OverflowItem } from "@/components/OverflowMenu";
-import { Sidebar, SIDEBAR_TABS, type Tab } from "@/components/Sidebar";
-import { CommandPalette } from "@/components/CommandPalette";
-import { usePersona, useSettings, useHistory, useSaved, useStats } from "@/lib/storage";
-import { cn } from "@/lib/utils";
 
-export default function Home() {
-  const [tab, setTab] = useState<Tab>("suggest");
-  const [persona, setPersona] = usePersona();
-  const [settings, updateSettings] = useSettings();
-  const { history, add, remove, clear } = useHistory();
-  const { items: savedItems } = useSaved();
-  const { stats } = useStats();
-
-  const [settingsOpen, setSettingsOpen] = useState(false);
-  const [historyOpen, setHistoryOpen] = useState(false);
-  const [savedOpen, setSavedOpen] = useState(false);
-  const [statsOpen, setStatsOpen] = useState(false);
-  const [paletteOpen, setPaletteOpen] = useState(false);
-
-  // ⌘K / Ctrl-K to open the command palette
-  useEffect(() => {
-    const onKey = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setPaletteOpen((v) => !v);
-      }
-    };
-    window.addEventListener("keydown", onKey);
-    return () => window.removeEventListener("keydown", onKey);
-  }, []);
-
-  const overflowItems: OverflowItem[] = [
-    { label: "Saved replies", Icon: Bookmark, onClick: () => setSavedOpen(true), badge: savedItems.length, accent: "pink" },
-    { label: "History", Icon: Clock, onClick: () => setHistoryOpen(true), badge: history.length, accent: "pink" },
-    { label: "Reply stats", Icon: BarChart3, onClick: () => setStatsOpen(true), badge: stats.entries.length, accent: "purple" },
-  ];
-
-  const currentTab = SIDEBAR_TABS.find((t) => t.id === tab)!;
-  const TabIcon = currentTab.Icon;
-
+export default function Landing() {
   return (
-    <div className="flex min-h-screen">
-      {/* "Made by Rabie" credit — fixed top-right on desktop */}
-      <a
-        href="https://github.com/eibaRRR"
-        target="_blank"
-        rel="noopener noreferrer"
-        className="hidden md:inline-flex items-center gap-1.5 fixed top-5 right-6 z-40 px-3 py-1.5 rounded-full bg-surface/70 backdrop-blur-xl border border-border hover:border-pink/40 hover:bg-surface transition group shadow-card"
-        aria-label="Made by Rabie"
-      >
-        <span className="font-serif italic text-[13px] text-muted group-hover:text-text2 transition">
-          made by
-        </span>
-        <span className="text-[13px] font-semibold tracking-tight gradient-text">
-          Rabie
-        </span>
-        <span
-          className="w-1.5 h-1.5 rounded-full bg-brand-gradient animate-pulse"
-          aria-hidden="true"
-        />
-      </a>
-
-      {/* Desktop sidebar */}
-      <Sidebar
-        tab={tab}
-        onTab={setTab}
-        savedCount={savedItems.length}
-        historyCount={history.length}
-        statsCount={stats.entries.length}
-        onOpenSaved={() => setSavedOpen(true)}
-        onOpenHistory={() => setHistoryOpen(true)}
-        onOpenStats={() => setStatsOpen(true)}
-        onOpenSettings={() => setSettingsOpen(true)}
-        onOpenCommand={() => setPaletteOpen(true)}
-        spicyEnabled={settings.spicyEnabled}
-      />
-
-      {/* Main column */}
-      <div className="flex-1 min-w-0 flex flex-col">
-        {/* Mobile top bar (sticky, blurred) */}
-        <header className="md:hidden sticky top-0 z-30 px-4 pt-3 pb-3 bg-bg/80 backdrop-blur-xl border-b border-border">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2.5">
-              <div className="w-9 h-9 rounded-xl bg-brand-gradient flex items-center justify-center shadow-cta">
-                <Sparkles size={18} className="text-white" />
-              </div>
-              <div>
-                <div className="font-bold text-base leading-tight tracking-tight">
-                  <span className="gradient-text">FlirtyAI</span>
-                </div>
-                <div className="text-[11px] text-muted leading-tight">
-                  your AI wingperson{" "}
-                  <span className="font-serif italic">· by</span>{" "}
-                  <a
-                    href="https://github.com/eibaRRR"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="gradient-text font-semibold"
-                  >
-                    Rabie
-                  </a>
-                </div>
-              </div>
+    <div className="min-h-screen relative overflow-hidden">
+      {/* Top bar */}
+      <header className="sticky top-0 z-30 bg-bg/70 backdrop-blur-xl border-b border-border">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 h-16 flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-2.5 group">
+            <div className="w-9 h-9 rounded-xl bg-brand-gradient flex items-center justify-center shadow-cta group-hover:scale-105 transition">
+              <Sparkles size={18} className="text-white" />
             </div>
-            <div className="flex items-center gap-1.5">
-              <button
-                onClick={() => setPaletteOpen(true)}
-                className="p-2.5 rounded-xl bg-surface border border-border hover:border-borderStrong transition"
-                aria-label="Command palette"
-              >
-                <Command size={16} />
-              </button>
-              <OverflowMenu items={overflowItems} />
-              <button
-                onClick={() => setSettingsOpen(true)}
-                className={cn(
-                  "p-2.5 rounded-xl bg-surface border transition relative",
-                  settings.spicyEnabled
-                    ? "border-pink/50 hover:border-pink"
-                    : "border-border hover:border-borderStrong"
-                )}
-                aria-label="Settings"
-              >
-                <Settings size={16} />
-                {settings.spicyEnabled && (
-                  <span className="absolute -top-1 -right-1 w-2 h-2 bg-pink rounded-full animate-pulse" />
-                )}
-              </button>
+            <div>
+              <div className="font-bold text-base leading-tight tracking-tight">
+                <span className="gradient-text">FlirtyAI</span>
+              </div>
+              <div className="text-[11px] text-muted leading-tight">your AI wingperson</div>
             </div>
+          </Link>
+          <nav className="flex items-center gap-2 sm:gap-4 text-sm">
+            <a
+              href="#features"
+              className="hidden sm:inline text-text2 hover:text-text transition"
+            >
+              Features
+            </a>
+            <a
+              href="#how"
+              className="hidden sm:inline text-text2 hover:text-text transition"
+            >
+              How it works
+            </a>
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-1.5 bg-brand-gradient text-white text-sm font-semibold rounded-xl px-4 h-9 shadow-cta hover:brightness-110 transition"
+            >
+              Open app
+              <ArrowUpRight size={14} />
+            </Link>
+          </nav>
+        </div>
+      </header>
+
+      {/* Hero */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 hero-glow opacity-70 pointer-events-none" />
+        <div className="relative max-w-5xl mx-auto px-5 sm:px-8 pt-16 sm:pt-28 pb-20 sm:pb-32 text-center">
+          {/* Eyebrow chip */}
+          <div className="inline-flex items-center gap-2 text-[11px] uppercase tracking-wider font-semibold bg-surface/70 backdrop-blur-xl border border-border rounded-full px-3 py-1.5 mb-6 animate-fade-in">
+            <span className="w-1.5 h-1.5 rounded-full bg-brand-gradient animate-pulse" />
+            <span className="text-text2">
+              <span className="text-pink">New</span> · spicy mode + 9 AI tools
+            </span>
           </div>
-        </header>
 
-        {/* Active section eyebrow on mobile */}
-        <div className="md:hidden mt-4 px-4 flex items-center gap-2">
-          <TabIcon size={13} className="text-pink" />
-          <span className="text-eyebrow !text-text">{currentTab.label}</span>
-          <span className="text-[11px] text-muted">· {currentTab.hint}</span>
+          <h1 className="text-display text-5xl sm:text-7xl lg:text-[88px] mb-6 text-balance animate-slide-up">
+            Send the message
+            <br />
+            you&apos;d be{" "}
+            <span className="gradient-text">proud of.</span>
+          </h1>
+
+          <p
+            className="text-lg sm:text-xl text-text2 max-w-2xl mx-auto leading-relaxed text-balance mb-10 animate-slide-up"
+            style={{ animationDelay: "80ms" }}
+          >
+            Drop a chat screenshot, pick a vibe, and FlirtyAI cooks up reply options
+            calibrated to where things are headed. Bio rewrites, opener generation,
+            date plans, and a wingperson chat — all in one app.
+          </p>
+
+          <div
+            className="flex flex-col sm:flex-row items-center justify-center gap-3 animate-slide-up"
+            style={{ animationDelay: "160ms" }}
+          >
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-2 bg-brand-gradient text-white font-semibold rounded-xl px-6 h-12 text-[15px] shadow-cta hover:brightness-110 transition"
+            >
+              <Sparkles size={16} />
+              Open the app
+              <ArrowUpRight size={15} />
+            </Link>
+            <Link
+              href="/app"
+              className="inline-flex items-center gap-2 bg-surface border border-border text-text font-medium rounded-xl px-5 h-12 text-[15px] hover:border-borderStrong transition"
+            >
+              Try a demo
+              <span className="text-muted text-xs">no upload</span>
+            </Link>
+          </div>
+
+          <div
+            className="mt-8 flex items-center justify-center gap-4 text-[11px] text-muted animate-fade-in"
+            style={{ animationDelay: "260ms" }}
+          >
+            <span className="inline-flex items-center gap-1">
+              <Lock size={11} /> Screenshots never stored
+            </span>
+            <span>·</span>
+            <span className="inline-flex items-center gap-1">
+              <Globe2 size={11} /> EN · FR · AR · Darija
+            </span>
+            <span className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline-flex items-center gap-1">
+              <Zap size={11} /> ~2-5s replies
+            </span>
+          </div>
         </div>
 
-        {/* Tab content — centered, max-width column */}
-        <main className="flex-1 px-4 sm:px-6 md:px-10 lg:px-12 py-6 md:py-10 pb-safe-plus md:pb-12">
-          <div key={tab} className="mx-auto max-w-[720px] animate-slide-up">
-            {tab === "suggest" && (
-              <SuggestTab persona={persona} settings={settings} saveToHistory={add} />
-            )}
-            {tab === "roast" && (
-              <RoastTab
-                persona={persona}
-                defaultLanguage={settings.defaultLanguage}
-                spicy={settings.spicyEnabled}
-                model={settings.model}
-              />
-            )}
-            {tab === "tools" && <ToolsTab persona={persona} settings={settings} />}
-            {tab === "bio" && <BioTab settings={settings} model={settings.model} />}
-            {tab === "wing" && (
-              <WingChat
-                persona={persona}
-                defaultLanguage={settings.defaultLanguage}
-                spicy={settings.spicyEnabled}
-                model={settings.model}
-              />
-            )}
-          </div>
-        </main>
+        {/* Showcase chat-bubble preview */}
+        <ShowcaseConversation />
+      </section>
 
-        <footer className="hidden md:flex flex-col items-center gap-1 py-6 text-[11px] text-muted">
-          <span>Screenshots are processed in real-time and never stored on the server.</span>
-          <span className="inline-flex items-center gap-1.5">
+      {/* Features grid */}
+      <section
+        id="features"
+        className="max-w-6xl mx-auto px-5 sm:px-8 py-16 sm:py-24"
+      >
+        <div className="text-center max-w-2xl mx-auto mb-12 sm:mb-16">
+          <div className="text-eyebrow !text-pink mb-3">Five tabs, one wingperson</div>
+          <h2 className="text-display text-4xl sm:text-5xl text-balance">
+            Built for every awkward step.
+          </h2>
+        </div>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          {FEATURES.map((f, i) => (
+            <div
+              key={f.title}
+              className="group relative overflow-hidden rounded-2xl border border-border bg-surface p-6 shadow-card hover:border-pink/30 transition animate-slide-up"
+              style={{ animationDelay: `${i * 60}ms` }}
+            >
+              <div className="absolute -inset-px rounded-2xl pointer-events-none opacity-0 group-hover:opacity-100 transition bg-brand-gradient-soft" />
+              <div className="relative">
+                <div className="w-10 h-10 rounded-xl bg-surface2 border border-border flex items-center justify-center text-pink mb-4">
+                  <f.Icon size={18} />
+                </div>
+                <h3 className="font-semibold text-[17px] tracking-tight mb-1.5">
+                  {f.title}
+                </h3>
+                <p className="text-sm text-text2 leading-relaxed">{f.body}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* How it works */}
+      <section id="how" className="border-t border-border bg-surface/30">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-16 sm:py-24">
+          <div className="text-center max-w-2xl mx-auto mb-12">
+            <div className="text-eyebrow !text-pink mb-3">How it works</div>
+            <h2 className="text-display text-4xl sm:text-5xl text-balance">
+              Three taps to a better text.
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 sm:gap-6">
+            {STEPS.map((s, i) => (
+              <div
+                key={i}
+                className="relative bg-surface border border-border rounded-2xl p-6 shadow-card animate-slide-up"
+                style={{ animationDelay: `${i * 80}ms` }}
+              >
+                <div className="text-display gradient-text text-5xl mb-3">{i + 1}</div>
+                <h3 className="font-semibold text-[17px] tracking-tight mb-2">
+                  {s.title}
+                </h3>
+                <p className="text-sm text-text2 leading-relaxed">{s.body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="relative overflow-hidden">
+        <div className="absolute inset-0 hero-glow opacity-70 pointer-events-none" />
+        <div className="relative max-w-3xl mx-auto px-5 sm:px-8 py-20 sm:py-28 text-center">
+          <h2 className="text-display text-4xl sm:text-6xl mb-4 text-balance">
+            Stop overthinking.
+            <br />
+            <span className="gradient-text">Start sending.</span>
+          </h2>
+          <p className="text-base sm:text-lg text-text2 max-w-lg mx-auto leading-relaxed mb-8 text-balance">
+            Free to use. No sign-up. Your data stays on your device. Try a demo
+            scenario or upload a screenshot — see for yourself.
+          </p>
+          <Link
+            href="/app"
+            className="inline-flex items-center gap-2 bg-brand-gradient text-white font-semibold rounded-xl px-7 h-14 text-base shadow-cta hover:brightness-110 transition"
+          >
+            <Sparkles size={18} />
+            Open FlirtyAI
+            <ArrowUpRight size={16} />
+          </Link>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="border-t border-border">
+        <div className="max-w-6xl mx-auto px-5 sm:px-8 py-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[12px] text-muted">
+          <div className="flex items-center gap-2.5">
+            <div className="w-7 h-7 rounded-lg bg-brand-gradient flex items-center justify-center">
+              <Sparkles size={13} className="text-white" />
+            </div>
+            <span>
+              <span className="gradient-text font-semibold">FlirtyAI</span>{" "}
+              · all results are AI-generated, use your judgment.
+            </span>
+          </div>
+          <div className="flex items-center gap-1.5">
             <span className="font-serif italic">made with care by</span>
             <a
               href="https://github.com/eibaRRR"
@@ -201,76 +232,123 @@ export default function Home() {
             >
               Rabie
             </a>
-          </span>
-        </footer>
-      </div>
-
-      {/* Mobile bottom nav */}
-      <nav
-        className="md:hidden fixed bottom-0 left-0 right-0 z-30 bg-bg/85 backdrop-blur-xl border-t border-border pb-safe"
-        aria-label="Primary"
-      >
-        <div className="grid grid-cols-5">
-          {SIDEBAR_TABS.map(({ id, label, Icon }) => {
-            const active = tab === id;
-            return (
-              <button
-                key={id}
-                onClick={() => setTab(id)}
-                className={cn(
-                  "flex flex-col items-center justify-center gap-1 py-2.5 transition relative",
-                  active ? "text-pink" : "text-muted"
-                )}
-                aria-current={active ? "page" : undefined}
-              >
-                {active && (
-                  <span className="absolute top-0 inset-x-6 h-0.5 bg-brand-gradient rounded-full animate-fade-in" />
-                )}
-                <Icon size={18} />
-                <span className={cn("text-[10px] font-medium", active && "text-text")}>
-                  {label}
-                </span>
-              </button>
-            );
-          })}
+          </div>
         </div>
-      </nav>
-
-      {/* Drawers */}
-      <SettingsDrawer
-        open={settingsOpen}
-        onClose={() => setSettingsOpen(false)}
-        persona={persona}
-        setPersona={setPersona}
-        settings={settings}
-        updateSettings={updateSettings}
-      />
-      <HistoryDrawer
-        open={historyOpen}
-        onClose={() => setHistoryOpen(false)}
-        items={history}
-        onRemove={remove}
-        onClear={clear}
-      />
-      <SavedDrawer open={savedOpen} onClose={() => setSavedOpen(false)} />
-      <StatsDrawer open={statsOpen} onClose={() => setStatsOpen(false)} />
-
-      <CommandPalette
-        open={paletteOpen}
-        onClose={() => setPaletteOpen(false)}
-        onTab={setTab}
-        onOpenSaved={() => setSavedOpen(true)}
-        onOpenHistory={() => setHistoryOpen(true)}
-        onOpenStats={() => setStatsOpen(true)}
-        onOpenSettings={() => setSettingsOpen(true)}
-        settings={settings}
-        toggleSpicy={(v) =>
-          updateSettings({
-            spicyEnabled: v,
-            spicyAcknowledged: v ? true : settings.spicyAcknowledged,
-          })
-        }
-      />
+      </footer>
     </div>
   );
 }
+
+// ===== Static showcase preview (decorative, not interactive) =====
+function ShowcaseConversation() {
+  return (
+    <div className="relative max-w-2xl mx-auto px-5 sm:px-8 pb-20 sm:pb-28 -mt-2">
+      <div className="relative bg-surface/70 backdrop-blur-xl border border-border rounded-3xl shadow-pop overflow-hidden">
+        {/* Faux header */}
+        <div className="flex items-center gap-3 px-5 py-3 border-b border-border bg-surface/60">
+          <div className="w-9 h-9 rounded-full bg-brand-gradient" />
+          <div className="flex-1">
+            <div className="text-sm font-semibold leading-tight">Salma</div>
+            <div className="text-[11px] text-muted leading-tight">active now</div>
+          </div>
+          <div className="text-eyebrow">FlirtyAI demo</div>
+        </div>
+        {/* Messages */}
+        <div className="px-5 py-6 space-y-3">
+          <div className="flex justify-start">
+            <div className="max-w-[80%] bg-surface2 border border-border rounded-2xl rounded-bl-md px-4 py-2.5 text-[15px] leading-relaxed">
+              soo what u doing this weekend
+            </div>
+          </div>
+          <div className="flex justify-end animate-slide-up">
+            <div className="max-w-[80%] bg-brand-gradient text-white rounded-2xl rounded-br-md px-4 py-2.5 text-[15px] leading-relaxed shadow-cta">
+              probably plotting how to get you to come along — what&apos;s your saturday looking like
+            </div>
+          </div>
+          <div className="flex items-center gap-2 pt-3">
+            <span className="text-eyebrow">Suggested · medium risk</span>
+            <span className="h-px flex-1 bg-border" />
+            <span className="inline-flex items-center gap-1 text-[11px] text-muted">
+              <Sparkles size={11} /> generated in 2.4s
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+const FEATURES = [
+  {
+    title: "Suggest replies",
+    body:
+      "Upload a chat screenshot. Pick a vibe (Flirty, Smooth, Unhinged…). Get 3-5 reply options across safe / medium / bold risk.",
+    Icon: Sparkles,
+  },
+  {
+    title: "Roast your last text",
+    body:
+      "Brutal, funny, calibrated. Get a score, a verdict, what worked, what flopped, and what you should have sent instead.",
+    Icon: Flame,
+  },
+  {
+    title: "Opener · date · closure",
+    body:
+      "First-message generator from a bio. Date ideas with a ready-to-send pitch. Closure messages when it&apos;s time to end it.",
+    Icon: Wrench,
+  },
+  {
+    title: "Bio rewriter",
+    body:
+      "Same facts, different energy. Mysterious, Funny, Sincere, Bold — pick your vibes and get rewrites under your character cap.",
+    Icon: Wand2,
+  },
+  {
+    title: "Wingperson chat",
+    body:
+      "A direct, witty AI chat coach you can ask anything. Pastes back ideas in your texting style. Will push back when you&apos;re about to do something cringe.",
+    Icon: MessageSquare,
+  },
+  {
+    title: "Saved · history · stats",
+    body:
+      "Bookmark replies you love. Mark what worked vs flopped. See your win rate by risk level, mood, and language. Stored locally.",
+    Icon: Bookmark,
+  },
+  {
+    title: "Darija + 4 more languages",
+    body:
+      "Native Moroccan Darija (Arabic & Latin script with 3/7/9), French, Arabic, English. Mirrors code-switching naturally.",
+    Icon: Languages,
+  },
+  {
+    title: "Privacy by default",
+    body:
+      "Screenshots are processed in real-time and never stored on the server. All your saved replies, history, and stats live on your device.",
+    Icon: Lock,
+  },
+  {
+    title: "Track what lands",
+    body:
+      "A/B success tracking on every reply. Mark Worked or Flopped — your stats panel shows what mood + risk wins for you.",
+    Icon: BarChart3,
+  },
+];
+
+const STEPS = [
+  {
+    title: "Drop the chat.",
+    body:
+      "Click, drag, or paste from clipboard. Up to 3 screenshots — leftmost is the oldest. Or skip and try one of the demo scenarios.",
+  },
+  {
+    title: "Pick the vibe.",
+    body:
+      "Flirty? Nonchalant? Bold? Mix up to three moods. Crank the intensity slider, pick your length, opt into spicy if you&apos;re 18+.",
+  },
+  {
+    title: "Send the one that lands.",
+    body:
+      "Get 3-5 reply options with reasoning. Predict how they&apos;ll react. Save the keepers. Mark what worked. Send the message you&apos;d be proud of.",
+  },
+];

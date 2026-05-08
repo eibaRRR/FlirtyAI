@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: "FlirtyAI",
     description:
       "Upload a chat screenshot, pick a vibe, and get reply options that actually land.",
-    start_url: "/",
+    start_url: "/app",
     scope: "/",
     display: "standalone",
     orientation: "portrait",

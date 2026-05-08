@@ -11,9 +11,11 @@ import {
   Bookmark,
   ThumbsUp,
   ThumbsDown,
+  Share2,
 } from "lucide-react";
 import type { Language, MoodPreset, PredictOutput, Reply } from "@/lib/schema";
 import { useSaved, useStats } from "@/lib/storage";
+import { renderReplyShareImage, shareOrDownload } from "@/lib/share";
 import { useCopyWithToast, useToast } from "./Toaster";
 import { cn } from "@/lib/utils";
 
@@ -66,6 +68,7 @@ export function ReplyCard({
   const [expanded, setExpanded] = useState(false);
   const [outcome, setOutcome] = useState<"worked" | "flopped" | null>(null);
   const [pulseSave, setPulseSave] = useState(false);
+  const [sharing, setSharing] = useState(false);
 
   const copyWithToast = useCopyWithToast();
   const { toast } = useToast();
@@ -129,6 +132,26 @@ export function ReplyCard({
     );
   };
 
+  const onShare = async () => {
+    if (sharing) return;
+    setSharing(true);
+    try {
+      const blob = await renderReplyShareImage(reply, { eyebrow: "Reply suggestion" });
+      if (!blob) {
+        toast("Couldn't render image", "error");
+        return;
+      }
+      const result = await shareOrDownload(blob);
+      if (result === "shared") toast("Shared 🔥", "success");
+      else if (result === "downloaded") toast("Image saved", "success");
+      else toast("Share failed — try again", "error");
+    } catch {
+      toast("Share failed", "error");
+    } finally {
+      setSharing(false);
+    }
+  };
+
   const runPredict = async () => {
     if (!onPredict) return;
     if (prediction) {
@@ -183,13 +206,26 @@ export function ReplyCard({
               "p-1.5 rounded-lg transition",
               isSaved
                 ? "text-pink hover:bg-pink/10"
-                : "text-muted hover:text-pink hover:bg-panel2",
+                : "text-muted hover:text-pink hover:bg-surface2",
               pulseSave && "animate-pop-in"
             )}
             title={isSaved ? "Remove from saved" : "Save to favorites"}
             aria-label={isSaved ? "Remove from saved" : "Save"}
           >
             <Bookmark size={15} fill={isSaved ? "currentColor" : "none"} />
+          </button>
+          <button
+            onClick={onShare}
+            disabled={sharing}
+            className="p-1.5 rounded-lg text-muted hover:text-pink hover:bg-surface2 transition disabled:opacity-50"
+            title="Share as image"
+            aria-label="Share as image"
+          >
+            {sharing ? (
+              <Loader2 size={15} className="animate-spin" />
+            ) : (
+              <Share2 size={15} />
+            )}
           </button>
           {onPredict && (
             <button

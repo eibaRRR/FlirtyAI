@@ -1,9 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { Wand2, Loader2, AlertCircle, Copy, Check } from "lucide-react";
+import { Wand2, AlertCircle, Copy, Check } from "lucide-react";
 import { GenderToggle } from "./GenderToggle";
 import { LanguageSelector } from "./LanguageSelector";
+import { Button, Pill, Section, Slider } from "@/components/ui";
+import { useCopyWithToast } from "./Toaster";
 import {
   BIO_VIBES,
   type BioVariant,
@@ -14,42 +16,39 @@ import {
 import type { SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
 
-function VariantCard({ v }: { v: BioVariant }) {
+function VariantCard({ v, index = 0 }: { v: BioVariant; index?: number }) {
   const [copied, setCopied] = useState(false);
+  const copy = useCopyWithToast();
   const onCopy = async () => {
-    await navigator.clipboard.writeText(v.bio);
+    await copy(v.bio, "Bio copied");
     setCopied(true);
     setTimeout(() => setCopied(false), 1400);
   };
   return (
-    <div className="bg-panel border border-border rounded-2xl p-4 hover:border-purple/40 transition">
-      <div className="flex items-start justify-between gap-3 mb-2">
-        <span className="text-xs font-semibold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-gradient text-white">
+    <div
+      className="group bg-surface border border-border rounded-2xl p-5 hover:border-pink/40 shadow-card transition animate-slide-up"
+      style={{ animationDelay: `${index * 60}ms` }}
+    >
+      <div className="flex items-center justify-between gap-3 mb-3">
+        <span className="text-[10px] font-bold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-brand-gradient text-white shadow-cta">
           {v.vibe}
         </span>
-        <div className="flex items-center gap-3 text-xs">
-          <span className="text-muted">{v.bio.length} chars</span>
-          <button
-            onClick={onCopy}
-            className="text-muted hover:text-pink transition flex items-center gap-1.5"
-          >
-            {copied ? (
-              <>
-                <Check size={14} /> Copied
-              </>
-            ) : (
-              <>
-                <Copy size={14} /> Copy
-              </>
-            )}
-          </button>
-        </div>
+        <span className="text-[11px] text-muted tabular-nums">{v.bio.length} chars</span>
       </div>
-      <div className="text-sm leading-relaxed whitespace-pre-wrap" dir="auto">
+      {/* Profile-card preview frame */}
+      <div className="rounded-xl border border-border bg-surface2 px-4 py-4 text-[15px] leading-relaxed whitespace-pre-wrap" dir="auto">
         {v.bio}
       </div>
-      <div className="mt-3 pt-3 border-t border-border text-xs text-muted italic">
-        {v.note}
+      <div className="mt-3 flex items-start justify-between gap-3">
+        <p className="text-xs text-muted italic flex-1 leading-relaxed">{v.note}</p>
+        <Button
+          variant="outline"
+          size="sm"
+          leftIcon={copied ? <Check size={13} className="text-safe" /> : <Copy size={13} />}
+          onClick={onCopy}
+        >
+          {copied ? "Copied" : "Use this"}
+        </Button>
       </div>
     </div>
   );
@@ -105,110 +104,118 @@ export function BioTab({ settings, model }: Props) {
     }
   };
 
-  return (
-    <div className="space-y-5">
-      <div className="text-sm text-muted">
-        Paste your current dating-profile bio. Pick the vibes you want and get rewrites that
-        keep the facts but change the energy.
-      </div>
+  // Bar color for char count
+  const pctOver = bio.length / 1000;
+  const barColor =
+    pctOver > 0.95 ? "bg-bold" : pctOver > 0.8 ? "bg-med" : "bg-brand-gradient";
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">Your current bio</label>
+  return (
+    <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-0">
+      {/* Hero */}
+      {!variants && (
+        <header className="relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 sm:px-10 sm:py-14 text-center">
+          <div className="hero-glow opacity-50" />
+          <div className="relative z-10 max-w-md mx-auto">
+            <div className="text-eyebrow !text-pink mb-3">Bio</div>
+            <h1 className="text-display text-4xl sm:text-5xl mb-3 text-balance">
+              Same facts. <span className="gradient-text">Better energy.</span>
+            </h1>
+            <p className="text-sm sm:text-base text-text2 leading-relaxed text-balance">
+              Paste your current bio. Pick the vibes. Keep what&apos;s true, change how
+              it lands.
+            </p>
+          </div>
+        </header>
+      )}
+
+      <Section eyebrow="Your current bio">
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           maxLength={1000}
           rows={5}
-          placeholder='Paste your bio here...'
-          className="w-full bg-panel border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple resize-none"
+          placeholder="Paste your bio here…"
+          className="w-full bg-surface2 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink/60 resize-none placeholder:text-muted"
         />
-        <div className="text-right text-xs text-muted mt-1">{bio.length}/1000</div>
-      </div>
-
-      <div>
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm text-muted">Vibes (pick 1-4)</label>
-          <span className="text-xs text-muted">{vibes.length}/4</span>
+        <div className="mt-2">
+          <div className="h-1 bg-surface2 rounded-full overflow-hidden">
+            <div
+              className={cn("h-full transition-all", barColor)}
+              style={{ width: `${Math.min(100, pctOver * 100)}%` }}
+            />
+          </div>
+          <div className="flex justify-between text-[11px] text-muted mt-1 tabular-nums">
+            <span>{bio.length} chars</span>
+            <span>1000 max</span>
+          </div>
         </div>
+      </Section>
+
+      <Section
+        eyebrow="Vibes"
+        hint="Pick 1-4 — one rewrite per vibe."
+        trailing={<span className="text-[11px] text-muted tabular-nums">{vibes.length}/4</span>}
+      >
         <div className="flex flex-wrap gap-2">
-          {BIO_VIBES.map((v) => {
-            const active = vibes.includes(v);
-            return (
-              <button
-                key={v}
-                type="button"
-                onClick={() => toggleVibe(v)}
-                className={cn(
-                  "px-3.5 py-1.5 rounded-full text-sm font-medium transition border",
-                  active
-                    ? "bg-brand-gradient border-transparent text-white shadow-lg shadow-pink/20"
-                    : "bg-panel2 border-border text-text/80 hover:border-purple/60"
-                )}
-              >
-                {v}
-              </button>
-            );
-          })}
+          {BIO_VIBES.map((v) => (
+            <Pill key={v} selected={vibes.includes(v)} onClick={() => toggleVibe(v)}>
+              {v}
+            </Pill>
+          ))}
         </div>
-      </div>
+      </Section>
 
-      <div className="bg-panel border border-border rounded-xl px-4 py-3">
-        <div className="flex items-center justify-between mb-2">
-          <label className="text-sm font-medium">Max characters per variant</label>
-          <span className="text-sm font-mono text-pink">{maxChars}</span>
-        </div>
-        <input
-          type="range"
+      <Section eyebrow="Constraints">
+        <Slider
+          value={maxChars}
+          onChange={setMaxChars}
           min={60}
           max={800}
           step={10}
-          value={maxChars}
-          onChange={(e) => setMaxChars(Number(e.target.value))}
-          className="w-full"
+          label="Max characters per variant"
+          leftLabel="60"
+          rightLabel="800"
+          formatValue={(n) => `${n} chars`}
         />
-        <div className="flex justify-between text-xs text-muted mt-1">
-          <span>60</span>
-          <span>Tinder ~500</span>
-          <span>800</span>
+        <div className="text-[11px] text-muted mt-1.5 text-center">
+          Tinder caps at ~500 · Hinge at ~150
         </div>
-      </div>
+      </Section>
 
-      <div className="flex flex-wrap gap-6">
-        <GenderToggle label="You are" value={userGender} onChange={setUserGender} />
-      </div>
+      <Section eyebrow="Identity">
+        <div className="flex flex-wrap gap-x-8 gap-y-4 mb-4">
+          <GenderToggle label="You are" value={userGender} onChange={setUserGender} />
+        </div>
+        <LanguageSelector value={language} onChange={setLanguage} />
+      </Section>
 
-      <LanguageSelector value={language} onChange={setLanguage} />
-
-      <button
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={loading}
+        leftIcon={<Wand2 size={18} />}
         onClick={run}
-        disabled={loading || bio.trim().length === 0}
-        className="w-full bg-brand-gradient text-white font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-lg shadow-pink/20"
+        disabled={bio.trim().length === 0}
       >
-        {loading ? (
-          <>
-            <Loader2 size={18} className="animate-spin" />
-            Rewriting...
-          </>
-        ) : (
-          <>
-            <Wand2 size={18} />
-            Rewrite my bio
-          </>
-        )}
-      </button>
+        {loading ? "Rewriting…" : "Rewrite my bio"}
+      </Button>
 
       {error && (
-        <div className="flex items-start gap-2 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3 text-sm">
+        <div className="flex items-start gap-2.5 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3.5 text-sm animate-slide-up">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {variants && variants.length > 0 && (
-        <section className="space-y-3 pt-4">
-          <h2 className="text-lg font-semibold">Your rewrites</h2>
+        <section className="space-y-3 pt-2">
+          <div>
+            <div className="text-eyebrow">Rewrites · {variants.length}</div>
+            <h2 className="text-xl font-semibold tracking-tight">Pick your bio.</h2>
+          </div>
           {variants.map((v, i) => (
-            <VariantCard key={i} v={v} />
+            <VariantCard key={i} v={v} index={i} />
           ))}
         </section>
       )}

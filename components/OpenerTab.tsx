@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Sparkles, Loader2, AlertCircle, Copy, Check, Bookmark } from "lucide-react";
+import { Sparkles, AlertCircle, Copy, Check, Bookmark } from "lucide-react";
 import { MoodControls } from "./MoodControls";
 import { GenderToggle } from "./GenderToggle";
 import { LanguageSelector } from "./LanguageSelector";
 import { Segmented } from "./Segmented";
 import { Toggle } from "./Toggle";
+import { Button, Section } from "@/components/ui";
 import { useToast, useCopyWithToast } from "./Toaster";
 import {
   LENGTHS,
@@ -188,63 +189,62 @@ export function OpenerTab({ persona, settings, spicy, model }: Props) {
   };
 
   return (
-    <div className="space-y-5">
-      <div className="text-sm text-muted">
-        No conversation yet? Paste their bio (and any quick notes about their photos), pick a
-        vibe, and get opener candidates that hook into specifics.
-      </div>
+    <div className="space-y-6">
+      {!openers && (
+        <p className="text-sm text-text2 leading-relaxed text-balance">
+          No conversation yet? Paste their bio, pick a vibe — get openers that hook into
+          specifics, not generic compliments.
+        </p>
+      )}
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">Their bio</label>
+      <Section eyebrow="Their bio" trailing={<span className="text-[11px] text-muted tabular-nums">{bio.length}/800</span>}>
         <textarea
           value={bio}
           onChange={(e) => setBio(e.target.value)}
           maxLength={800}
           rows={4}
-          placeholder='Paste the bio here, e.g. "med student | hiking, climbing | dog mom 🐕 | spotify on shuffle"'
-          className="w-full bg-panel border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple resize-none"
+          placeholder='e.g. "med student | hiking, climbing | dog mom 🐕 | spotify on shuffle"'
+          className="w-full bg-surface2 border border-border rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-pink/60 resize-none placeholder:text-muted"
         />
-        <div className="text-right text-xs text-muted mt-1">{bio.length}/800</div>
-      </div>
+      </Section>
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        <div>
-          <label className="text-sm text-muted mb-2 block">Photos notes (optional)</label>
-          <textarea
-            value={photosNote}
-            onChange={(e) => setPhotosNote(e.target.value)}
-            maxLength={400}
-            rows={2}
-            placeholder='e.g. "one photo at a concert, another with a dog"'
-            className="w-full bg-panel border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-purple resize-none"
-          />
+      <Section eyebrow="Extras" hint="Optional but they sharpen the result.">
+        <div className="grid sm:grid-cols-2 gap-3">
+          <div>
+            <label className="text-eyebrow block mb-2">Photo notes</label>
+            <textarea
+              value={photosNote}
+              onChange={(e) => setPhotosNote(e.target.value)}
+              maxLength={400}
+              rows={2}
+              placeholder='e.g. "concert photo, another with a dog"'
+              className="w-full bg-surface2 border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-pink/60 resize-none placeholder:text-muted"
+            />
+          </div>
+          <div>
+            <label className="text-eyebrow block mb-2">Platform</label>
+            <input
+              value={platform}
+              onChange={(e) => setPlatform(e.target.value)}
+              maxLength={40}
+              placeholder="Tinder, Hinge, IG…"
+              className="w-full bg-surface2 border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-pink/60 placeholder:text-muted"
+            />
+          </div>
         </div>
-        <div>
-          <label className="text-sm text-muted mb-2 block">Platform (optional)</label>
+        <div className="mt-3">
+          <label className="text-eyebrow block mb-2">What you want to convey</label>
           <input
-            value={platform}
-            onChange={(e) => setPlatform(e.target.value)}
-            maxLength={40}
-            placeholder="Tinder, Hinge, IG..."
-            className="w-full bg-panel border border-border rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:border-purple"
+            value={context}
+            onChange={(e) => setContext(e.target.value)}
+            maxLength={400}
+            placeholder='e.g. "show I read the bio, not creepy"'
+            className="w-full bg-surface2 border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-pink/60 placeholder:text-muted"
           />
         </div>
-      </div>
+      </Section>
 
-      <div>
-        <label className="text-sm text-muted mb-2 block">
-          What you want to convey <span className="text-muted/60">(optional)</span>
-        </label>
-        <input
-          value={context}
-          onChange={(e) => setContext(e.target.value)}
-          maxLength={400}
-          placeholder='e.g. "show I actually read the bio, not creepy"'
-          className="w-full bg-panel border border-border rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-purple"
-        />
-      </div>
-
-      <div className="bg-panel/50 border border-border rounded-2xl p-5">
+      <Section eyebrow="The vibe">
         <MoodControls
           moods={moods}
           setMoods={setMoods}
@@ -255,61 +255,59 @@ export function OpenerTab({ persona, settings, spicy, model }: Props) {
           setIntensity={setIntensity}
           spicyEnabled={spicy}
         />
-      </div>
+      </Section>
 
-      <div className="grid sm:grid-cols-2 gap-3">
-        <Toggle
-          label="Mood blend"
-          hint="Pick up to 3 moods to mix"
-          checked={blendMode}
-          onChange={onSetBlend}
-        />
-        <div className="bg-panel border border-border rounded-xl px-4 py-3">
-          <div className="text-sm font-medium mb-2">Length</div>
+      <Section
+        eyebrow="Output"
+        trailing={
           <Segmented<Length>
             options={LENGTHS.map((l) => ({ value: l, label: LENGTH_LABELS[l] }))}
             value={length}
             onChange={setLength}
             size="sm"
           />
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-6">
-        <GenderToggle label="You are" value={userGender} onChange={setUserGender} />
-        <GenderToggle label="They are" value={targetGender} onChange={setTargetGender} />
-      </div>
-
-      <LanguageSelector value={language} onChange={setLanguage} />
-
-      <button
-        onClick={run}
-        disabled={loading}
-        className="w-full bg-brand-gradient text-white font-semibold py-3.5 rounded-xl hover:opacity-90 disabled:opacity-40 disabled:cursor-not-allowed transition flex items-center justify-center gap-2 shadow-lg shadow-pink/20"
+        }
       >
-        {loading ? (
-          <>
-            <Loader2 size={18} className="animate-spin" />
-            Crafting openers...
-          </>
-        ) : (
-          <>
-            <Sparkles size={18} />
-            Generate openers
-          </>
-        )}
-      </button>
+        <Toggle
+          label="Mood blend"
+          hint="Pick up to 3 moods and mix their energies"
+          checked={blendMode}
+          onChange={onSetBlend}
+        />
+      </Section>
+
+      <Section eyebrow="Who's who">
+        <div className="flex flex-wrap gap-x-8 gap-y-4 mb-4">
+          <GenderToggle label="You are" value={userGender} onChange={setUserGender} />
+          <GenderToggle label="They are" value={targetGender} onChange={setTargetGender} />
+        </div>
+        <LanguageSelector value={language} onChange={setLanguage} />
+      </Section>
+
+      <Button
+        variant="primary"
+        size="lg"
+        fullWidth
+        loading={loading}
+        leftIcon={<Sparkles size={18} />}
+        onClick={run}
+      >
+        {loading ? "Crafting openers…" : "Generate openers"}
+      </Button>
 
       {error && (
-        <div className="flex items-start gap-2 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3 text-sm">
+        <div className="flex items-start gap-2.5 bg-bold/10 border border-bold/30 text-bold rounded-xl p-3.5 text-sm animate-slide-up">
           <AlertCircle size={16} className="mt-0.5 shrink-0" />
           <span>{error}</span>
         </div>
       )}
 
       {openers && openers.length > 0 && (
-        <section className="space-y-3 pt-4">
-          <h2 className="text-lg font-semibold">Your openers</h2>
+        <section className="space-y-3 pt-2">
+          <div>
+            <div className="text-eyebrow">Openers · {openers.length}</div>
+            <h2 className="text-xl font-semibold tracking-tight">Pick the hook.</h2>
+          </div>
           {openers.map((o, i) => (
             <OpenerCard key={i} opener={o} language={language} moods={moods} />
           ))}

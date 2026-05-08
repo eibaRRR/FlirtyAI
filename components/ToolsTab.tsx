@@ -10,24 +10,24 @@ import { cn } from "@/lib/utils";
 
 type ToolMode = "opener" | "date" | "closure";
 
-const TOOLS: { id: ToolMode; label: string; Icon: typeof Send; blurb: string }[] = [
+const TOOLS: { id: ToolMode; label: string; Icon: typeof Send; tagline: string }[] = [
   {
     id: "opener",
     label: "Opener",
     Icon: Send,
-    blurb: "First-message generator from a bio.",
+    tagline: "First message that hooks.",
   },
   {
     id: "date",
     label: "Date ideas",
     Icon: CalendarHeart,
-    blurb: "Plan the next meet-up with ready-to-send pitches.",
+    tagline: "Plan the next meet-up.",
   },
   {
     id: "closure",
     label: "Closure",
     Icon: Heart,
-    blurb: "End things cleanly, kindly, and on your terms.",
+    tagline: "End it kindly, end it cleanly.",
   },
 ];
 
@@ -38,44 +38,54 @@ type Props = {
 
 export function ToolsTab({ persona, settings }: Props) {
   const [mode, setMode] = useState<ToolMode>("opener");
+  const current = TOOLS.find((t) => t.id === mode)!;
 
   return (
-    <div className="space-y-5">
-      <div className="grid grid-cols-3 gap-2 bg-panel border border-border rounded-2xl p-1">
-        {TOOLS.map(({ id, label, Icon }) => {
-          const active = mode === id;
-          return (
-            <button
-              key={id}
-              onClick={() => setMode(id)}
-              className={cn(
-                "flex items-center justify-center gap-1.5 py-2.5 rounded-xl text-sm font-medium transition",
-                active
-                  ? "bg-brand-gradient text-white shadow-lg shadow-pink/20"
-                  : "text-muted hover:text-text"
-              )}
-            >
-              <Icon size={14} />
-              <span>{label}</span>
-            </button>
-          );
-        })}
-      </div>
+    <div className="space-y-6">
+      {/* Editorial hero with tool selector */}
+      <header className="relative overflow-hidden rounded-3xl border border-border bg-surface px-5 py-6 sm:px-8 sm:py-8">
+        <div className="hero-glow opacity-40" />
+        <div className="relative z-10">
+          <div className="text-eyebrow !text-pink mb-2">Tools</div>
+          <h1 className="text-display text-3xl sm:text-4xl mb-4 text-balance">
+            <span className="gradient-text">{current.tagline}</span>
+          </h1>
+          <div className="grid grid-cols-3 gap-1.5 bg-surface2/70 border border-border rounded-xl p-1 max-w-md">
+            {TOOLS.map(({ id, label, Icon }) => {
+              const active = mode === id;
+              return (
+                <button
+                  key={id}
+                  onClick={() => setMode(id)}
+                  className={cn(
+                    "flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-medium transition",
+                    active
+                      ? "bg-brand-gradient text-white shadow-cta"
+                      : "text-muted hover:text-text"
+                  )}
+                  aria-pressed={active}
+                >
+                  <Icon size={14} />
+                  <span className="hidden xs:inline sm:inline">{label}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      </header>
 
-      <div className="text-xs text-muted -mt-2">
-        {TOOLS.find((t) => t.id === mode)?.blurb}
+      <div key={mode} className="animate-fade-in">
+        {mode === "opener" && (
+          <OpenerTab
+            persona={persona}
+            settings={settings}
+            spicy={settings.spicyEnabled}
+            model={settings.model}
+          />
+        )}
+        {mode === "date" && <DateIdeasTab settings={settings} />}
+        {mode === "closure" && <ClosureTab persona={persona} settings={settings} />}
       </div>
-
-      {mode === "opener" && (
-        <OpenerTab
-          persona={persona}
-          settings={settings}
-          spicy={settings.spicyEnabled}
-          model={settings.model}
-        />
-      )}
-      {mode === "date" && <DateIdeasTab settings={settings} />}
-      {mode === "closure" && <ClosureTab persona={persona} settings={settings} />}
     </div>
   );
 }

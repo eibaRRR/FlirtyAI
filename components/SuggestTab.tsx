@@ -13,7 +13,9 @@ import {
   GitCompareArrows,
   MessageSquareDashed,
   Flag,
+  Wand2,
 } from "lucide-react";
+import { DEMO_SCENARIOS, type DemoScenario } from "@/lib/demo";
 import { MultiUploader } from "./MultiUploader";
 import { MoodControls } from "./MoodControls";
 import { GenderToggle } from "./GenderToggle";
@@ -93,6 +95,33 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
   const [summaryError, setSummaryError] = useState<string | null>(null);
   const [summaryOpen, setSummaryOpen] = useState(false);
 
+  // Demo state — true while user is viewing canned demo output
+  const [isDemo, setIsDemo] = useState(false);
+
+  const loadDemo = (s: DemoScenario) => {
+    setError(null);
+    setReplies(s.replies);
+    setAnalysis(s.analysis);
+    setCompare(null);
+    setContext(s.context);
+    setMoods(s.moods);
+    setIntensity(s.intensity);
+    setLanguage(s.language);
+    setIsDemo(true);
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const exitDemo = () => {
+    setIsDemo(false);
+    setReplies(null);
+    setAnalysis(null);
+    setContext("");
+    setMoods(["Flirty"]);
+    setIntensity(5);
+  };
+
   useEffect(() => {
     if (!settings.spicyEnabled) {
       setMoods((prev) => {
@@ -123,6 +152,7 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
     setReplies(null);
     setCompare(null);
     setAnalysis(null);
+    setIsDemo(false);
     setLoading(true);
 
     const tagInterval = setInterval(() => {
@@ -231,25 +261,63 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
   return (
     <div className="space-y-6 sm:space-y-8 pb-28 sm:pb-0">
       {/* ===== Hero ===== */}
-      {files.length === 0 ? (
-        <header className="relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 sm:px-10 sm:py-14 text-center">
-          <div className="hero-glow opacity-50" />
-          <div className="relative z-10 max-w-md mx-auto">
-            {settings.spicyEnabled && (
-              <div className="inline-flex items-center gap-1.5 text-[11px] text-pink bg-pink/10 border border-pink/30 rounded-full py-1 px-2.5 mb-4 font-semibold uppercase tracking-wider">
-                <Flame size={11} /> Spicy mode
-              </div>
-            )}
-            <h1 className="text-display text-4xl sm:text-5xl mb-3 text-balance">
-              Send the message you&apos;d be{" "}
-              <span className="gradient-text">proud of.</span>
-            </h1>
-            <p className="text-sm sm:text-base text-text2 leading-relaxed text-balance">
-              Drop a chat screenshot, pick a vibe, and we&apos;ll cook up reply options
-              calibrated to where things are headed.
-            </p>
-          </div>
-        </header>
+      {files.length === 0 && !isDemo ? (
+        <>
+          <header className="relative overflow-hidden rounded-3xl border border-border bg-surface px-6 py-10 sm:px-10 sm:py-14 text-center">
+            <div className="hero-glow opacity-50" />
+            <div className="relative z-10 max-w-md mx-auto">
+              {settings.spicyEnabled && (
+                <div className="inline-flex items-center gap-1.5 text-[11px] text-pink bg-pink/10 border border-pink/30 rounded-full py-1 px-2.5 mb-4 font-semibold uppercase tracking-wider">
+                  <Flame size={11} /> Spicy mode
+                </div>
+              )}
+              <h1 className="text-display text-4xl sm:text-5xl mb-3 text-balance">
+                Send the message you&apos;d be{" "}
+                <span className="gradient-text">proud of.</span>
+              </h1>
+              <p className="text-sm sm:text-base text-text2 leading-relaxed text-balance">
+                Drop a chat screenshot, pick a vibe, and we&apos;ll cook up reply options
+                calibrated to where things are headed.
+              </p>
+            </div>
+          </header>
+
+          {/* Demo scenarios — show what the app does without uploading */}
+          <section>
+            <div className="flex items-center gap-2 mb-3">
+              <span className="text-eyebrow">No screenshot? Try a demo</span>
+              <span className="h-px flex-1 bg-border" />
+              <span className="text-[11px] text-muted">instant · no upload</span>
+            </div>
+            <div className="grid sm:grid-cols-3 gap-3">
+              {DEMO_SCENARIOS.map((s, i) => (
+                <button
+                  key={s.id}
+                  onClick={() => loadDemo(s)}
+                  className="group text-left bg-surface border border-border rounded-2xl p-4 hover:border-pink/40 shadow-card transition animate-slide-up"
+                  style={{ animationDelay: `${i * 60}ms` }}
+                >
+                  <div className="flex items-center gap-2 mb-2 text-pink">
+                    <span className="w-7 h-7 rounded-lg bg-pink/15 border border-pink/30 flex items-center justify-center">
+                      <Wand2 size={13} />
+                    </span>
+                    <span className="text-[10px] uppercase tracking-wider text-muted">
+                      Scenario {i + 1}
+                    </span>
+                  </div>
+                  <h4 className="font-semibold text-[15px] tracking-tight leading-snug mb-1.5">
+                    {s.title}
+                  </h4>
+                  <p className="text-xs text-text2 leading-relaxed">{s.blurb}</p>
+                  <div className="mt-3 inline-flex items-center gap-1 text-[11px] text-pink font-semibold uppercase tracking-wider opacity-70 group-hover:opacity-100 transition">
+                    Try it
+                    <span className="transition group-hover:translate-x-0.5">→</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </section>
+        </>
       ) : (
         <header className="flex items-center justify-between gap-4">
           <div>
@@ -518,11 +586,30 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
       {/* ===== Single results ===== */}
       {replies && replies.length > 0 && (
         <section className="space-y-4 pt-2" aria-live="polite">
+          {isDemo && (
+            <div className="flex items-center justify-between gap-3 bg-purple/10 border border-purple/30 rounded-xl px-4 py-2.5 text-sm animate-slide-up">
+              <span className="inline-flex items-center gap-2 text-purple">
+                <Wand2 size={14} />
+                <span>
+                  <span className="font-semibold">Demo mode</span>{" "}
+                  <span className="text-text2">— canned output, not from your screenshot.</span>
+                </span>
+              </span>
+              <button
+                onClick={exitDemo}
+                className="text-xs text-muted hover:text-text transition shrink-0"
+              >
+                Exit demo
+              </button>
+            </div>
+          )}
           {analysis && <AnalysisPanel analysis={analysis} />}
           <div className="flex items-end justify-between gap-3 pt-1">
             <div>
               <div className="text-eyebrow">Replies · {replies.length} options</div>
-              <h2 className="text-xl font-semibold tracking-tight">Pick your line.</h2>
+              <h2 className="text-xl font-semibold tracking-tight">
+                {isDemo ? "Here's what FlirtyAI cooks up." : "Pick your line."}
+              </h2>
             </div>
           </div>
           <div className="space-y-3">
