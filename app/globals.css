@@ -1,0 +1,309 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =====================================================
+   FlirtyAI design tokens
+   - 3 surface levels per theme
+   - signature gradient used sparingly (brand mark, hero CTA, active tab indicator, selected chip)
+   - shadow tokens are mode-aware
+   ===================================================== */
+
+:root,
+html.dark {
+  /* Surfaces */
+  --c-bg: 12 12 18;
+  --c-surface: 18 18 26;
+  --c-surface-2: 26 26 38;
+  --c-surface-3: 36 36 50;
+  --c-border: 42 42 56;
+  --c-border-strong: 64 64 82;
+
+  /* Text */
+  --c-text: 245 245 250;
+  --c-text-2: 175 175 190;
+  --c-muted: 120 120 135;
+
+  /* Brand + accents */
+  --c-pink: 255 70 145;
+  --c-purple: 170 90 255;
+  --c-warm: 255 180 110;
+
+  /* Status */
+  --c-safe: 52 211 153;
+  --c-med: 250 176 5;
+  --c-bold: 244 79 95;
+
+  /* Ambient */
+  --bg-glow-1: rgba(255, 70, 145, 0.18);
+  --bg-glow-2: rgba(170, 90, 255, 0.18);
+  --bg-glow-3: rgba(255, 180, 110, 0.06);
+
+  /* Shadows */
+  --shadow-card: 0 1px 0 rgba(255, 255, 255, 0.04) inset,
+    0 12px 32px -16px rgba(0, 0, 0, 0.6);
+  --shadow-pop: 0 30px 80px -20px rgba(0, 0, 0, 0.7),
+    0 1px 0 rgba(255, 255, 255, 0.05) inset;
+  --shadow-cta: 0 12px 32px -8px rgba(255, 70, 145, 0.45),
+    0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+
+  /* Skeleton */
+  --skeleton-from: rgba(255, 255, 255, 0.04);
+  --skeleton-to: rgba(255, 255, 255, 0.10);
+
+  /* Grain (data URI noise — subtle, light) */
+  --grain-opacity: 0.04;
+}
+
+html.light {
+  --c-bg: 250 248 252;
+  --c-surface: 255 255 255;
+  --c-surface-2: 247 245 252;
+  --c-surface-3: 255 255 255;
+  --c-border: 230 226 240;
+  --c-border-strong: 205 200 220;
+
+  --c-text: 22 18 30;
+  --c-text-2: 90 86 110;
+  --c-muted: 135 130 155;
+
+  --c-pink: 230 50 120;
+  --c-purple: 135 70 220;
+  --c-warm: 220 130 50;
+
+  --c-safe: 22 163 74;
+  --c-med: 217 119 6;
+  --c-bold: 220 38 38;
+
+  --bg-glow-1: rgba(230, 50, 120, 0.10);
+  --bg-glow-2: rgba(135, 70, 220, 0.10);
+  --bg-glow-3: rgba(220, 130, 50, 0.05);
+
+  --shadow-card: 0 1px 2px rgba(20, 20, 40, 0.04),
+    0 12px 32px -16px rgba(20, 20, 40, 0.10);
+  --shadow-pop: 0 30px 80px -20px rgba(20, 20, 40, 0.20),
+    0 1px 0 rgba(255, 255, 255, 0.6) inset;
+  --shadow-cta: 0 16px 32px -10px rgba(230, 50, 120, 0.35),
+    0 0 0 1px rgba(255, 255, 255, 0.6) inset;
+
+  --skeleton-from: rgba(20, 20, 40, 0.05);
+  --skeleton-to: rgba(20, 20, 40, 0.10);
+
+  --grain-opacity: 0.025;
+}
+
+html,
+body {
+  background: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  min-height: 100vh;
+  font-feature-settings: "ss01", "cv11";
+}
+
+body {
+  background-image:
+    radial-gradient(ellipse 70% 45% at 12% -10%, var(--bg-glow-1), transparent 60%),
+    radial-gradient(ellipse 60% 50% at 92% 8%, var(--bg-glow-2), transparent 60%),
+    radial-gradient(ellipse 50% 40% at 50% 100%, var(--bg-glow-3), transparent 65%);
+  background-attachment: fixed;
+}
+
+/* Subtle film grain on top of the body for premium feel */
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+  opacity: var(--grain-opacity);
+  mix-blend-mode: overlay;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.5 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+  background-size: 160px 160px;
+}
+
+* {
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: rgba(255, 70, 145, 0.35);
+}
+
+input[type="range"] {
+  accent-color: rgb(var(--c-pink));
+}
+
+/* Sleek scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(var(--c-border)) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgb(var(--c-border));
+  border-radius: 999px;
+}
+*::-webkit-scrollbar-thumb:hover {
+  background: rgb(var(--c-border-strong));
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* Focus rings (keyboard only) */
+:focus-visible {
+  outline: 2px solid rgb(var(--c-pink));
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+button:focus-visible,
+a:focus-visible {
+  outline-offset: 3px;
+}
+
+/* Safe-area helpers for mobile bottom nav */
+.pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 0px);
+}
+.pb-safe-plus {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 5.25rem);
+}
+
+/* Skeleton shimmer */
+.skeleton {
+  background: linear-gradient(
+    90deg,
+    var(--skeleton-from) 0%,
+    var(--skeleton-to) 50%,
+    var(--skeleton-from) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.4s ease-in-out infinite;
+}
+
+/* Text utilities */
+.text-display {
+  font-family: var(--font-serif), ui-serif, Georgia, serif;
+  font-style: italic;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+  line-height: 1.05;
+}
+.text-eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: rgb(var(--c-muted));
+}
+.text-balance {
+  text-wrap: balance;
+}
+
+/* Gradient text helper */
+.gradient-text {
+  background: linear-gradient(135deg, rgb(var(--c-pink)) 0%, rgb(var(--c-purple)) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* Brand-gradient border (use as wrapper with gradient bg + inner card overlay) */
+.gradient-border {
+  position: relative;
+  background-clip: padding-box;
+}
+.gradient-border::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, rgb(var(--c-pink)), rgb(var(--c-purple)));
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* Hero glow blobs (used inside hero containers) */
+.hero-glow {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+  z-index: 0;
+}
+.hero-glow::before,
+.hero-glow::after {
+  content: "";
+  position: absolute;
+  width: 60%;
+  height: 60%;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.55;
+  animation: blob-drift 30s linear infinite;
+}
+.hero-glow::before {
+  background: rgb(var(--c-pink));
+  top: -20%;
+  left: -10%;
+}
+.hero-glow::after {
+  background: rgb(var(--c-purple));
+  bottom: -25%;
+  right: -10%;
+  animation-direction: reverse;
+}
+
+@keyframes blob-drift {
+  0% {
+    transform: translate(0, 0) scale(1);
+  }
+  50% {
+    transform: translate(8%, 6%) scale(1.08);
+  }
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes ping-once {
+  0% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  100% {
+    transform: scale(2.2);
+    opacity: 0;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  .hero-glow::before,
+  .hero-glow::after {
+    animation: none;
+  }
+}

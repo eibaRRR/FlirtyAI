@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>FlirtyAI</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app">
+    <header class="bar">
+      <div class="logo">
+        <span class="logo-dot"></span>
+        <strong>FlirtyAI</strong>
+      </div>
+      <a class="settings-link" href="options.html" target="_blank" title="Settings">⚙</a>
+    </header>
+
+    <div class="form">
+      <button id="capture" class="primary">📸 Capture this tab</button>
+      <div id="preview-wrap" class="hidden">
+        <img id="preview" alt="capture preview" />
+        <button id="recapture" class="link">retake</button>
+      </div>
+
+      <label class="row">
+        <span>What do you want?</span>
+        <input id="context" type="text" placeholder='e.g. "ask her out"' maxlength="500" />
+      </label>
+
+      <label class="row">
+        <span>Mood</span>
+        <select id="mood">
+          <option>Flirty</option>
+          <option>Unhinged</option>
+          <option>Nonchalant</option>
+          <option>Funny</option>
+          <option>Smooth</option>
+          <option>Playful</option>
+          <option>Bold</option>
+        </select>
+      </label>
+
+      <label class="row">
+        <span>Intensity <em id="intensity-val">5</em>/10</span>
+        <input id="intensity" type="range" min="1" max="10" value="5" />
+      </label>
+
+      <label class="row">
+        <span>Length</span>
+        <select id="length">
+          <option value="short">Short</option>
+          <option value="medium" selected>Medium</option>
+          <option value="long">Long</option>
+        </select>
+      </label>
+
+      <label class="row">
+        <span>Language</span>
+        <select id="language">
+          <option value="auto" selected>Auto</option>
+          <option value="darija_latin">Darija (3/7/9)</option>
+          <option value="darija_arabic">Darija (الدارجة)</option>
+          <option value="english">English</option>
+          <option value="french">Français</option>
+          <option value="arabic">العربية</option>
+        </select>
+      </label>
+
+      <div class="row two">
+        <label>
+          <span>You are</span>
+          <select id="userGender">
+            <option value="male" selected>Male</option>
+            <option value="female">Female</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+        <label>
+          <span>They are</span>
+          <select id="targetGender">
+            <option value="female" selected>Female</option>
+            <option value="male">Male</option>
+            <option value="other">Other</option>
+          </select>
+        </label>
+      </div>
+
+      <button id="generate" class="primary" disabled>✨ Generate replies</button>
+      <div id="error" class="error hidden"></div>
+    </div>
+
+    <div id="results" class="results hidden"></div>
+
+    <footer class="footnote">
+      Backend: <code id="backend">—</code>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
