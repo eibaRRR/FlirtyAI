@@ -129,7 +129,9 @@ async function callJsonModel(
     : userText;
 
   const maxTokens = Number(process.env.LLM_MAX_TOKENS ?? 1500);
-  const temperature = Number(process.env.LLM_TEMPERATURE ?? 0.9);
+  // Higher temperature = more humanized variance (less "polished AI" mean output).
+  // Bumped from 0.9 to 1.05 to push the model off its safest, most-AI-like response.
+  const temperature = Number(process.env.LLM_TEMPERATURE ?? 1.05);
   const extras = modelExtraParams(preset.modelId);
 
   const response = await client.chat.completions.create({
@@ -272,7 +274,7 @@ export async function chatWingperson(
       { role: "system", content: sys },
       ...history.map((m) => ({ role: m.role, content: m.content })),
     ],
-    temperature: 0.85,
+    temperature: 1.0,
     max_tokens: 800,
     ...modelExtraParams(preset.modelId),
   });
