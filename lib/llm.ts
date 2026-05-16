@@ -48,7 +48,13 @@ import {
 } from "./prompt";
 
 function getClient(preset: ModelPreset) {
-  if (!preset.apiKey) throw new Error(`API key for "${preset.name}" is not set`);
+  if (!preset.apiKey) {
+    throw new Error(
+      `API key for "${preset.name}" is not set. Add ${
+        preset.id === "kimi" ? "KIMI_API_KEY" : "MAVERICK_API_KEY"
+      } (or LLM_API_KEY) to your environment variables and redeploy.`
+    );
+  }
   return new OpenAI({
     apiKey: preset.apiKey,
     baseURL: preset.baseURL,
@@ -56,6 +62,11 @@ function getClient(preset: ModelPreset) {
       "HTTP-Referer": process.env.SITE_URL || "http://localhost:3000",
       "X-Title": process.env.SITE_NAME || "FlirtyAI",
     },
+    // Explicit timeout: cap the upstream request below the function maxDuration so
+    // the browser never sees a hung connection. Default SDK timeout is 10 minutes.
+    timeout: Number(process.env.LLM_TIMEOUT_MS ?? 75_000),
+    // Don't let the SDK retry — we surface the error and let the UI retry.
+    maxRetries: 0,
   });
 }
 

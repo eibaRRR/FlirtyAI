@@ -18,6 +18,7 @@ import { useSaved, useStats } from "@/lib/storage";
 import { renderReplyShareImage, shareOrDownload } from "@/lib/share";
 import { useCopyWithToast, useToast } from "./Toaster";
 import { cn } from "@/lib/utils";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 const RISK_STYLES: Record<Reply["risk"], { label: string; dot: string; ring: string }> = {
   safe: {
@@ -175,7 +176,7 @@ export function ReplyCard({
         setPredictError("Prediction failed.");
       }
     } catch (e: unknown) {
-      setPredictError(e instanceof Error ? e.message : "Network error");
+      setPredictError(explainFetchError(e));
     } finally {
       setPredicting(false);
     }

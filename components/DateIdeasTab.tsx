@@ -17,6 +17,7 @@ import {
 } from "@/lib/schema";
 import { useSaved, type SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 const BUDGET_DOT: Record<DateBudget, string> = {
   free: "bg-safe",
@@ -177,10 +178,10 @@ export function DateIdeasTab({ settings }: Props) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Something went wrong.");
+      if (!res.ok) { setError(await explainResponseError(res)); return; }
       else setIdeas(data.ideas);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       setLoading(false);
     }

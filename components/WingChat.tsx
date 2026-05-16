@@ -15,6 +15,7 @@ import type { ChatMessage, Language } from "@/lib/schema";
 import { LANGUAGES, LANGUAGE_LABELS } from "@/lib/schema";
 import { ProgressDots } from "@/components/ui";
 import { cn } from "@/lib/utils";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 type Props = {
   persona: string;
@@ -88,14 +89,14 @@ export function WingChat({ persona, defaultLanguage, spicy, model }: Props) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: newHistory, language, persona, spicy, model }),
       });
-      const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Something went wrong.");
-      } else {
-        setMessages([...newHistory, { role: "assistant", content: data.reply }]);
+        setError(await explainResponseError(res));
+        return;
       }
+      const data = await res.json();
+      setMessages([...newHistory, { role: "assistant", content: data.reply }]);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       setLoading(false);
     }

@@ -17,6 +17,8 @@ export type DemoScenario = {
   id: string;
   title: string;
   blurb: string;
+  /** Optional dating platform tag shown on landing-page demo cards (e.g. "Tinder") */
+  platform?: string;
   /** Display name for the fake match — used in the chat header */
   match: { name: string; status: string };
   /** The fake conversation that the canned replies are responding to */
@@ -36,6 +38,7 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     id: "left-on-read",
     title: "Left on read for 2 days",
     blurb: "She was into it, then went quiet. Re-open without sounding desperate.",
+    platform: "WhatsApp",
     match: { name: "Sara", status: "active 2d ago" },
     conversation: [
       { from: "me", text: "okay if you had to pick a death-row meal what's the order", ts: "Mon · 11:42 PM" },
@@ -83,6 +86,7 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     id: "first-message",
     title: "Fresh match, first message",
     blurb: "Just matched. Bio mentions hiking and a dog named Mochi. Open with something that lands.",
+    platform: "Tinder",
     match: { name: "Layla", status: "matched today" },
     conversation: [
       { from: "them", text: "hey 👋", ts: "Today · 6:18 PM" },
@@ -123,6 +127,7 @@ export const DEMO_SCENARIOS: DemoScenario[] = [
     id: "ask-out",
     title: "Time to ask her out",
     blurb: "Week of good banter. Propose meeting up — without making it a Tinder cliché.",
+    platform: "Hinge",
     match: { name: "Yasmine", status: "online now" },
     conversation: [
       { from: "me", text: "okay confession — i was 100% wrong about that pizza place", ts: "Today · 9:24 PM" },

@@ -22,6 +22,7 @@ import {
 } from "@/lib/schema";
 import { useSaved, type SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 const TONE_DOT: Record<ClosureTone, string> = {
   Mature: "bg-purple",
@@ -162,10 +163,10 @@ export function ClosureTab({ persona, settings }: Props) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Something went wrong.");
+      if (!res.ok) { setError(await explainResponseError(res)); return; }
       else setMessages(data.messages);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       setLoading(false);
     }

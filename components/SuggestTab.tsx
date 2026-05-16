@@ -42,6 +42,7 @@ import {
   type HistoryItem,
   type SavedSettings,
 } from "@/lib/storage";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 const LOADING_TAGLINES = [
   "Reading the vibe…",
@@ -151,10 +152,12 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
         fd.append("compareMode", "true");
 
       const res = await fetch("/api/suggest", { method: "POST", body: fd });
-      const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Something went wrong.");
-      } else if (data.compare) {
+        setError(await explainResponseError(res));
+        return;
+      }
+      const data = await res.json();
+      if (data.compare) {
         setCompare(data.compare);
       } else {
         setReplies(data.replies ?? []);
@@ -173,7 +176,7 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
         });
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       clearInterval(tagInterval);
       setLoading(false);
@@ -204,7 +207,7 @@ export function SuggestTab({ persona, settings, saveToHistory }: Props) {
         setSummary(data.summary);
       }
     } catch (e: unknown) {
-      setSummaryError(e instanceof Error ? e.message : "Network error");
+      setSummaryError(explainFetchError(e));
     } finally {
       setSummaryLoading(false);
     }

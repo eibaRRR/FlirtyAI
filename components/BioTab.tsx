@@ -15,6 +15,7 @@ import {
 } from "@/lib/schema";
 import type { SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 function VariantCard({ v, index = 0 }: { v: BioVariant; index?: number }) {
   const [copied, setCopied] = useState(false);
@@ -95,10 +96,10 @@ export function BioTab({ settings, model }: Props) {
         body: JSON.stringify({ bio, vibes, language, userGender, maxChars, model }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Something went wrong.");
+      if (!res.ok) { setError(await explainResponseError(res)); return; }
       else setVariants(data.variants);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       setLoading(false);
     }

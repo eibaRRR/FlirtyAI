@@ -6,6 +6,7 @@ import { MultiUploader } from "./MultiUploader";
 import { LanguageSelector } from "./LanguageSelector";
 import { RoastResult } from "./RoastResult";
 import type { Language, RoastOutput } from "@/lib/schema";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 type Props = {
   persona: string;
@@ -47,14 +48,16 @@ export function RoastTab({ persona, defaultLanguage, spicy, model }: Props) {
       fd.append("model", model);
 
       const res = await fetch("/api/suggest", { method: "POST", body: fd });
-      const data = await res.json();
       if (!res.ok) {
-        setError(data.error || "Something went wrong.");
-      } else if (data.roast) {
+        setError(await explainResponseError(res));
+        return;
+      }
+      const data = await res.json();
+      if (data.roast) {
         setResult(data.roast);
       }
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       setLoading(false);
     }

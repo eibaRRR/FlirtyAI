@@ -21,6 +21,7 @@ import {
 } from "@/lib/schema";
 import { useSaved, type SavedSettings } from "@/lib/storage";
 import { cn } from "@/lib/utils";
+import { explainFetchError, explainResponseError } from "@/lib/errors";
 
 const RISK_STYLES: Record<Opener["risk"], { label: string; cls: string }> = {
   safe: { label: "Safe", cls: "bg-safe/15 text-safe border-safe/30" },
@@ -179,10 +180,10 @@ export function OpenerTab({ persona, settings, spicy, model }: Props) {
         }),
       });
       const data = await res.json();
-      if (!res.ok) setError(data.error || "Something went wrong.");
+      if (!res.ok) { setError(await explainResponseError(res)); return; }
       else setOpeners(data.openers);
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : "Network error");
+      setError(explainFetchError(e));
     } finally {
       setLoading(false);
     }
